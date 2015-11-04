@@ -1,19 +1,17 @@
-ep2: ep2.o memory.o
-	gcc -o ep2 ep2.o memory.o -pthread -lreadline -g
+ep3: ep3.o exit.o
+	gcc -o ep3 ep3.o exit.o -lreadline -g
 
-ep2.o: source/ep2.c
-	gcc -c source/ep2.c -Wall -Wextra -pedantic -g
+ep3.o: source/ep3.c
+	gcc -c source/ep3.c -Wall -Wextra -pedantic -g
 
-memory.o: source/memory.c
-	gcc -c source/memory.c -Wall -Wextra -pedantic -g
+exit.o: source/commands/exit/exit.c
+	gcc -c source/commands/exit/exit.c -Wall -Wextra -pedantic -g
 
 clean:
 	rm -rf source/obj/*.o
 	rm -rf source/*~
 	rm -rf a.out
-	rm ep2
-	rm /tmp/ep2.mem
-	rm /tmp/ep2.vir
+	rm ep3
 
-all: ep2
+all: ep3
 	mv ./*.o source/obj/
