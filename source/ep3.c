@@ -24,10 +24,12 @@ int main()
 
     /*Do file system request command*/
     if(cmd_mount(cmd, argc, argv, root_dir, mounted)) {
-      if(root != NULL) free(root);
-      root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
-      strcat(strcpy(root, argv[0]), "/");
-      mounted = true;
+      if(argv[0][0] == '/') {
+        if(root != NULL) free(root);
+        root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
+        strcat(strcpy(root, argv[0]), "/");
+        mounted = true;
+      }
     }
     else if(cmd_umount(cmd, root, root_dir, mounted)) { mounted = false; }
     else if(cmd_exit(cmd, mounted)) { if(!mounted) break; }
