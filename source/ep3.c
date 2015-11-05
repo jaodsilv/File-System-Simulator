@@ -19,8 +19,8 @@ int main()
 
     if(cmd_mount(cmd, argc, argv)) {
       if(root != NULL) free(root);
-      root = malloc((strlen(argv[0]) + 1) * sizeof(*root));
-      strcpy(root, argv[0]);
+      root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
+      strcat(strcpy(root, argv[0]), "/");
     }
     else if(cmd_exit(cmd)) break;
     else unrecognized(cmd);
