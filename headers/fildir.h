@@ -1,3 +1,6 @@
+#ifndef FILDIR_H
+#define FILDIR_H
+
 /*The root directory is converted to "/" in the simulation. To the program knows who
 is the root, the value is stored in the variable named "root" in ep3.c*/
 #define ROOT  "/"
@@ -27,3 +30,5 @@ typedef struct directory {
   struct directory *children_dir;   /*Array with all directories that are direct children of this directory.*/
   unsigned int children;            /*Number of children directories (children_dir size). mkdir calls must start setting this value to zero*/
 } Directory;
+
+#endif

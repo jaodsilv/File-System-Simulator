@@ -3,28 +3,37 @@
 
 int main()
 {
-  char *cmd = NULL, *root = NULL;
+  Directory *root_dir;
+  bool mounted = false;
   int argc; char **argv = NULL;
+  char *cmd = NULL, *root = NULL;
 
+  root_dir = malloc(sizeof(*root_dir));
   using_history();
   while(true) {
+    /*Get prompt requested command*/
     if((cmd = get_cmd(cmd)) == NULL) {
       printf("Expansion attempt has failed.\n");
       free(cmd); cmd = NULL;
       continue;
     }
 
+    /*Get arguments from requested copmmand*/
     argc = get_argc(cmd);
     argv = get_argv(cmd, argc, argv);
 
-    if(cmd_mount(cmd, argc, argv)) {
+    /*Do file system request command*/
+    if(cmd_mount(cmd, argc, argv, root_dir)) {
       if(root != NULL) free(root);
       root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
       strcat(strcpy(root, argv[0]), "/");
+      mounted = true;
     }
-    else if(cmd_exit(cmd)) break;
+    else if(cmd_umount(cmd, root, root_dir, mounted)) { mounted = false; }
+    else if(cmd_exit(cmd, mounted)) { if(!mounted) break; }
     else unrecognized(cmd);
 
+    /*Free for the next iteration*/
     free(cmd); cmd = NULL;
     if(argv != NULL) {
       int i;
@@ -39,6 +48,8 @@ int main()
     for(i = 0; i < argc; i++) { free(argv[i]); argv[i] = NULL; }
     free(argv); argv = NULL;
   }
+
+  free(root_dir); root_dir = NULL;
   printf("Program terminated.\n");
   return 0;
 }

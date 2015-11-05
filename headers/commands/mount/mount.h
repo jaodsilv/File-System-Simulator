@@ -1,4 +1,8 @@
+#ifndef MOUNT_H
+#define MOUNT_H
 #include <string.h>
-#include <stdlib.h>
+#include "../../fildir.h"
 
-int cmd_mount(char *, int, char **);
+int cmd_mount(char *, int, char **, Directory *);
+
+#endif

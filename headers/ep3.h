@@ -1,3 +1,5 @@
+#ifndef EP3_H
+#define EP3_H
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -35,3 +37,5 @@ int expand(char *);
 int get_argc(char *);
 char **get_argv(char *, int, char **);
 void unrecognized(char *);
+
+#endif
