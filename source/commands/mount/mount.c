@@ -53,6 +53,8 @@ void init_root_dir(char *root, Directory *root_dir)
   root_dir->files = 0;
 
   /*Set children directories*/
-  root_dir->children_dir = NULL;
+  root_dir->d = NULL;
+  root_dir->next = NULL;
+  root_dir->prev = NULL;
   root_dir->children = 0;
 }

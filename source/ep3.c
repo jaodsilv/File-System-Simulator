@@ -145,7 +145,7 @@ void print_root_dir_info(Directory *root_dir, bool mounted)
     printf("Parent: '%p'\n", (void*)root_dir->parent);
     printf("Head File: '%p'\n", (void*)root_dir->f);
     printf("Total files: '%d'\n", root_dir->files);
-    printf("Children Directories: '%p'\n", (void*)root_dir->children_dir);
+    printf("Head Child Directory: '%p'\n", (void*)root_dir->d);
     printf("Total Children Directories: '%d'\n", root_dir->children);
   }
 }
