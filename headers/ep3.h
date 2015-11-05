@@ -18,8 +18,16 @@
 #include "commands/umount/umount.h"
 #include "commands/exit/exit.h"
 
-/*The root directory is converted to "/" in the simulation*/
-#define ROOT "/"
+/*TODO:
+define FAT data structures (must study FAT to see better way to implement, considering the program)
+define bitmap for free space management
+
+Not sure if these guys will stay in this header too.
+*/
+
+
+/*Maximum size supported by the file system simulator is 100 MB*/
+#define FS_LIMIT  100
 
 /*Prototypes*/
 char *get_cmd(char *);
