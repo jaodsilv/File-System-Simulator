@@ -1,11 +1,14 @@
-ep3: ep3.o exit.o
-	gcc -o ep3 ep3.o exit.o -lreadline -g
+ep3: ep3.o exit.o mount.o
+	gcc -o ep3 ep3.o exit.o mount.o -lreadline -g
 
 ep3.o: source/ep3.c
 	gcc -c source/ep3.c -Wall -Wextra -pedantic -g
 
 exit.o: source/commands/exit/exit.c
 	gcc -c source/commands/exit/exit.c -Wall -Wextra -pedantic -g
+
+mount.o: source/commands/mount/mount.c
+	gcc -c source/commands/mount/mount.c -Wall -Wextra -pedantic -g
 
 clean:
 	rm -rf source/obj/*.o

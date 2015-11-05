@@ -18,8 +18,12 @@
 #include "commands/umount/umount.h"
 #include "commands/exit/exit.h"
 
+/*The root directory is converted to "/" in the simulation*/
+#define ROOT "/"
+
 /*Prototypes*/
 char *get_cmd(char *);
 int expand(char *);
-char *get_arg(char *, char *, char *);
+int get_argc(char *);
+char **get_argv(char *, int, char **);
 void unrecognized(char *);

@@ -2,26 +2,42 @@
 
 int main()
 {
-  char *cmd = NULL, *arg = NULL;
+  char *cmd = NULL, *root = NULL;
+  int argc; char **argv = NULL;
 
   using_history();
   while(true) {
     if((cmd = get_cmd(cmd)) == NULL) {
       printf("Expansion attempt has failed.\n");
       free(cmd); cmd = NULL;
-      if(arg != NULL) { free(arg); arg = NULL; }
       continue;
     }
 
-    /*if(cmd_mount(cmd));
-    else */if(cmd_exit(cmd)) break;
+    argc = get_argc(cmd);
+    argv = get_argv(cmd, argc, argv);
+
+    if(cmd_mount(cmd, argc, argv)) {
+      if(root != NULL) free(root);
+      root = malloc((strlen(argv[0]) + 1) * sizeof(*root));
+      strcpy(root, argv[0]);
+    }
+    else if(cmd_exit(cmd)) break;
     else unrecognized(cmd);
 
     free(cmd); cmd = NULL;
-    if(arg != NULL) { free(arg); arg = NULL; }
+    if(argv != NULL) {
+      int i;
+      for(i = 0; i < argc; i++) { free(argv[i]); argv[i] = NULL; }
+      free(argv); argv = NULL;
+    }
   }
   free(cmd); cmd = NULL;
-  if(arg != NULL) { free(arg); arg = NULL; }
+  if(root != NULL) { free(root); root = NULL; }
+  if(argv != NULL) {
+    int i;
+    for(i = 0; i < argc; i++) { free(argv[i]); argv[i] = NULL; }
+    free(argv); argv = NULL;
+  }
   printf("Program terminated.\n");
   return 0;
 }
@@ -50,20 +66,54 @@ int expand(char *cmd)
   return result;
 }
 
-/*Get the argument for requested command 'rqst'*/
-char *get_arg(char *cmd, char *arg, char *rqst)
+/*Get the number of arguments of the command*/
+int get_argc(char *cmd)
 {
-  int i, j = 0;
+  unsigned int i; int argc = 0;
 
-  arg = (char*) malloc(strlen(cmd) * sizeof(*arg));
-  for(i = strlen(rqst); isspace(cmd[i]); i++) continue;
-  if(cmd[i] == '\0') {
-    free(arg); arg = NULL;
-    return NULL;
+  for(i = 0; i < strlen(cmd); i++)
+    if(isspace(cmd[i])) {
+      while(isspace(cmd[i])) {
+        if(cmd[++i] == '\0') break;
+        else if(!isspace(cmd[i])) { argc++; break; }
+      }
+      i--;
+    }
+  return argc;
+}
+
+/*Get the arguments of the given command*/
+char **get_argv(char *cmd, int argc, char **argv)
+{
+  /*If there are arguments...*/
+  if(argc > 0) {
+    int i, arg_count = 0;
+    /*Allocate memory for the argc arguments*/
+    argv = malloc(argc * sizeof(char *));
+    /*Move to an index after the requested command*/
+    for(i = 0; !isspace(cmd[i]); i++) continue;
+    /*Get arguments*/
+    while(arg_count < argc) {
+      int j, start, end, k;
+      /*search for the next argument starting index*/
+      while(isspace(cmd[i])) i++;
+      /*Mark argument starting index*/
+      start = i;
+      /*Search argument ending index*/
+      while(!isspace(cmd[i])) {
+        i++;
+        if(cmd[i] == '\0') break;
+      }
+      /*Mark argument ending index*/
+      end = i;
+      /*Allocate the argument size*/
+      argv[arg_count] = malloc((end - start + 1) * sizeof(char));
+      /*Copy argument to argv*/
+      for(j = 0, k = start; j < end - start; j++, k++) argv[arg_count][j] = cmd[k];
+      argv[arg_count++][j] = '\0';
+    }
   }
-  while(!isspace(cmd[i]) && cmd[i] != '\0') arg[j++] = cmd[i++];
-  arg[j] = '\0';
-  return arg;
+  return argv;
 }
 
 /*User invoked unknown command to ep1sh*/
