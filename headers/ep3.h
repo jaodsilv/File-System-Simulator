@@ -38,4 +38,8 @@ int get_argc(char *);
 char **get_argv(char *, int, char **);
 void unrecognized(char *);
 
+
+/*Debug functions. Delete when finish simulator*/
+void print_root_dir_info(Directory *, bool);
+
 #endif

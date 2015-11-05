@@ -4,7 +4,7 @@
 int main()
 {
   Directory *root_dir;
-  bool mounted = false;
+  bool mounted = false, *ptrm = &mounted;
   int argc; char **argv = NULL;
   char *cmd = NULL, *root = NULL;
 
@@ -26,13 +26,13 @@ int main()
     if(cmd_mount(cmd, argc, argv, root_dir, mounted)) {
       if(argv[0][0] == '/') {
         if(root != NULL) free(root);
-        root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
-        strcat(strcpy(root, argv[0]), "/");
+        root = malloc((strlen(argv[0]) + 1) * sizeof(*root));
+        strcpy(root, argv[0]);
         mounted = true;
       }
     }
     else if(cmd_umount(cmd, root, root_dir, mounted)) { mounted = false; }
-    else if(cmd_exit(cmd, mounted)) { if(!mounted) break; }
+    else if(cmd_exit(cmd, ptrm)) { if(!mounted) break; }
     else unrecognized(cmd);
 
     /*Free for the next iteration*/
@@ -132,3 +132,20 @@ char **get_argv(char *cmd, int argc, char **argv)
 
 /*User invoked unknown command to ep1sh*/
 void unrecognized(char *cmd) { printf("Unrecognized command '%s'.\n", cmd); }
+
+/*Test Function*/
+void print_root_dir_info(Directory *root_dir, bool mounted)
+{
+  if(mounted) {
+    printf("My Root Directory:\n");
+    printf("Name: '%s'\n", root_dir->name);
+    printf("Creation Date: '%s'\n", root_dir->created);
+    printf("Modified Date: '%s'\n", root_dir->modified);
+    printf("Accessed Date: '%s'\n", root_dir->accessed);
+    printf("Parent: '%p'\n", (void*)root_dir->parent);
+    printf("Head File: '%p'\n", (void*)root_dir->f);
+    printf("Total files: '%d'\n", root_dir->files);
+    printf("Children Directories: '%p'\n", (void*)root_dir->children_dir);
+    printf("Total Children Directories: '%d'\n", root_dir->children);
+  }
+}
