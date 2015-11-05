@@ -9,6 +9,7 @@ int cmd_umount(char *cmd, char *root, Directory *root_dir, bool mounted)
       kill_children(root_dir);
       /*Now reset the root info*/
       reset_root_dir(root_dir);
+      printf("File system sucessfully unmounted!\n");
     }
     else
       printf("You have no mounted file system! Mount one using 'mount <absolute_path_to_file_system_root>'.\n");
