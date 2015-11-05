@@ -23,7 +23,7 @@ int main()
     argv = get_argv(cmd, argc, argv);
 
     /*Do file system request command*/
-    if(cmd_mount(cmd, argc, argv, root_dir)) {
+    if(cmd_mount(cmd, argc, argv, root_dir, mounted)) {
       if(root != NULL) free(root);
       root = malloc((strlen(argv[0]) + 2) * sizeof(*root));
       strcat(strcpy(root, argv[0]), "/");
