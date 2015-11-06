@@ -54,7 +54,7 @@ int main()
     for(i = 0; i < argc; i++) { free(argv[i]); argv[i] = NULL; }
     free(argv); argv = NULL;
   }
-
+  if(root_dir->name != NULL) { free(root_dir->name); root_dir->name = NULL; }
   free(root_dir); root_dir = NULL;
   printf("Program terminated.\n");
   return 0;
