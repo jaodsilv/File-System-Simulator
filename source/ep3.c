@@ -9,12 +9,10 @@ int main()
 
   root_dir = malloc(sizeof(*root_dir));
   /*Initialize bitmap. Set all positions to UNALLOCATED status*/
-  init_bitmap();
+  bitmap_init();
   /*Initialize fat. Set all positions to NOT_IN_USE status*/
-  init_fat();
+  fat_init();
   /*Prompt history*/
-  fat_use(1, 3999);
-  fat_use(0, 4000);
   using_history();
   while(true) {
     /*Get prompt requested command*/
