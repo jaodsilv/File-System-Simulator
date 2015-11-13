@@ -34,9 +34,12 @@ int cmd_mount(char *cmd, int argc, char **argv, Directory *root_dir, bool mounte
 /*Loads a binary file system previously created*/
 void load_binary(char *fs, Directory *root_dir)
 {
+  unsigned int i, free_blocks[1];
   FILE *p = NULL;
 
   p = fopen(fs, "rb");
+  /*Free Blocks*/
+  fread(free_blocks, sizeof(unsigned int), 1, p);
 
   /*Load bitmap*/
   /*Move stream pointer to the wanted position (= bitmap position)*/
@@ -73,9 +76,217 @@ void load_binary(char *fs, Directory *root_dir)
   root_dir->d  = NULL;
   root_dir->f  = NULL;
 
-  /*TODO: loop now here constructing the directory tree with the rest of the informations in the binary file*/
+  if(free_blocks[0] != FRESH_FS) {
+    unsigned int blocks_allocated = FRESH_FS - free_blocks[0];
+
+    for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i+=4000) {
+      bool is_a_file = false;
+      char character[1], name[1024];
+      unsigned int j, number[1], number2[1];
+      Directory *dir_node = NULL;
+      File *file_node = NULL;
+
+      /*First check if this block is used*/
+      j = i + FD_NAME;
+      fseek(p, j, SEEK_SET);
+      fread(name, sizeof(char), 1024, p);
+      /*UNUSED BLOCK*/
+      if(name[0] == '\0') continue;
+      /*If the tree does not contain the file, must construct every node till the file*/
+      if(!tree_contains_file(root_dir, name, dir_node, file_node)) build_nodes(root_dir, name, dir_node, file_node);
+      /*USED BLOCK*/
+      if(file_node != NULL) is_a_file = true;
+      /*Assign bitmap index as allocated*/
+      j = i + FD_BITMAP_INDEX;
+      fseek(p, j, SEEK_SET);
+      fread(number, sizeof(unsigned int), 1, p);
+      bitmap[number[0]] = ALLOCATED;
+      /*Retrieve FAT index and content*/
+      /*Assign FAT index with its correct content*/
+      j = i + FD_FAT_INDEX;
+      fseek(p, j, SEEK_SET);
+      fread(number, sizeof(unsigned int), 1, p);
+      j = i + FD_FAT_CONTENT;
+      fseek(p, j, SEEK_SET);
+      fread(number2, sizeof(unsigned int), 1, p);
+      fat[number[0]] = number2[0];
+
+      /*Assign general values to node. NOTE: The following values must be equal to all blocks of the same file*/
+      if(is_a_file) {
+        /*Assign first cluster*/
+        j = i + FD_FAT_FIRST_INDEX;
+        fseek(p, j, SEEK_SET);
+        fread(number, sizeof(unsigned int), 1, p);
+        file_node->fat_index = number[0];
+
+        /*Assign file size*/
+        j = i + FILE_SIZE;
+        fseek(p, j, SEEK_SET);
+        fread(number, sizeof(unsigned int), 1, p);
+        file_node->size = number[0];
+
+        /*Assign file creation date*/
+        j = i + FD_CDATE;
+        fseek(p, j, SEEK_SET);
+        fread(file_node->creation, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        /*Assign file modification date*/
+        j = i + FD_MDATE;
+        fseek(p, j, SEEK_SET);
+        fread(file_node->modification, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        /*Assign file access date*/
+        j = i + FD_ADATE;
+        fseek(p, j, SEEK_SET);
+        fread(file_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+      }
+      else {
+        /*Assign first cluster*/
+        j = i + FD_FAT_FIRST_INDEX;
+        fseek(p, j, SEEK_SET);
+        fread(number, sizeof(unsigned int), 1, p);
+        dir_node->fat_index = number[0];
+
+        /*Assign file creation date*/
+        j = i + FD_CDATE;
+        fseek(p, j, SEEK_SET);
+        fread(dir_node->creation, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        /*Assign file modification date*/
+        j = i + FD_MDATE;
+        fseek(p, j, SEEK_SET);
+        fread(dir_node->modification, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        /*Assign file access date*/
+        j = i + FD_ADATE;
+        fseek(p, j, SEEK_SET);
+        fread(dir_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+      }
+      if(--blocks_allocated == 0) break;
+    }
+  }
+
   fclose(p);
 }
+
+void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node)
+{
+  unsigned int i = 1;
+  Directory *p = NULL;
+  File *q = NULL;
+
+  p = root_dir;
+  while(name_from_binary[i] != '\0') {
+    unsigned int j;
+    char file_name[1024];
+
+    if(name_from_binary[i + 1] != '\0' && name_from_binary[i + 1] != '/') { i++; continue; }
+    /*if its a directory*/
+    if(name_from_binary[i + 1] == '/') {
+      Directory *parent;
+
+      strncpy(file_name, name_from_binary, i + 2);
+      file_name[i + 2] = '\0';
+      /*file_name contains the directory name, with the format (example for a 'test' directory) /test/.
+      NOTE: directory name will always end with '/'*/
+      parent = p;
+      p = p->d;
+      while(p != NULL) {
+        if(strcmp(p->name, file_name) == 0) break;
+        else p = p->next;
+      }
+      /*Must build this directory node*/
+      if(p == NULL) {
+        Directory *new;
+
+        new = malloc(sizeof(*new));
+        strcpy(new->name, file_name);
+        new->f = NULL;
+        new->parent = parent;
+        new->d = NULL;
+        new->next = parent->d;
+        new->prev = NULL;
+        if(parent->d != NULL) parent->d->prev = new;
+        parent->d = new;
+        dir_node = new;
+      }
+      i += 2; continue;
+    }
+    /*If its a file*/
+    else {
+      strncpy(file_name, name_from_binary, i + 1);
+      file_name[i + 1] = '\0';
+      /*file_name contains the file name, with the format (example for a 'test.txt' text file) /test.txt.
+      NOTE: file name will NEVER end with '/'*/
+      q = p->f;
+      while(q != NULL) {
+        if(strcmp(q->name, file_name) == 0) break;
+        else q = q->next;
+      }
+      /*Must build this file node*/
+      if(q == NULL) {
+        File *new;
+
+        new = malloc(sizeof(*new));
+        strcpy(new->name, file_name);
+        new->next = p->f;
+        new->prev = NULL;
+        if(p->f != NULL) p->f->prev = new;
+        p->f = new;
+        file_node = new;
+      }
+      i++; continue;
+    }
+  }
+}
+
+/*Check if the tree contains the file with name 'name_from_binary'*/
+bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node)
+{
+  unsigned int i = 1;
+  Directory *p = NULL;
+  File *q = NULL;
+
+  p = root_dir;
+  while(name_from_binary[i] != '\0') {
+    unsigned int j;
+    char file_name[1024];
+
+    if(name_from_binary[i + 1] != '\0' && name_from_binary[i + 1] != '/') { i++; continue; }
+    /*if its a directory*/
+    if(name_from_binary[i + 1] == '/') {
+      strncpy(file_name, name_from_binary, i + 2);
+      file_name[i + 2] = '\0';
+      /*file_name contains the directory name, with the format (example for a 'test' directory) /test/.
+      NOTE: directory name will always end with '/'*/
+      p = p->d;
+      while(p != NULL) {
+        if(strcmp(p->name, file_name) == 0) break;
+        else p = p->next;
+      }
+      if(p == NULL) break;
+      else if(strcmp(p->name, name_from_binary) == 0) { dir_node = p; return true; }
+      i += 2; continue;
+    }
+    /*If its a file*/
+    else {
+      strncpy(file_name, name_from_binary, i + 1);
+      file_name[i + 1] = '\0';
+      /*file_name contains the file name, with the format (example for a 'test.txt' text file) /test.txt.
+      NOTE: file name will NEVER end with '/'*/
+      q = p->f;
+      while(q != NULL) {
+        if(strcmp(q->name, file_name) == 0) break;
+        else q = q->next;
+      }
+      if(q == NULL) break;
+      else if(strcmp(q->name, name_from_binary) == 0) { file_node = q; return true; }
+      i++; continue;
+    }
+  }
+  return false;
+}
+
 
 /*Write recently created binary info*/
 void init_binary_info(char *fs, Directory *root_dir)

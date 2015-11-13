@@ -10,15 +10,13 @@
 typedef struct file {
   /*Metadata fields*/
   /*Absolute path to a file is path + name*/
-  char name[FNAME_SIZE];            /*File name*/
+  char name[FNAME_SIZE];            /*File name. NOTE: file name will NEVER end with '/'*/
   /*Creation, Last Modification and Last Access dates*/
   char creation[DATE_FORMAT_SIZE];
   char modification[DATE_FORMAT_SIZE];
   char access[DATE_FORMAT_SIZE];
   /*Data + Metadata size*/
-  unsigned int size;                /*File total size*/
-  /*Memory position (bitmap_index)*/
-  unsigned int bitmap_index;        /*Starting index in the bitmap array. Allocated in range [bitmap_index, bitmap_index + ((size / 4000) + 1) - 1]*/
+  unsigned int size;                /*File total size. This is, Data + Metadata*/
   /*FAT first cluster*/
   unsigned int fat_index;           /*First cluster index in file allocation table*/
   /*File list management*/
@@ -28,13 +26,13 @@ typedef struct file {
 
 /*A directory sctructure. Each directory is a node in a tree, with ROOT in the simulation being root in the real system*/
 typedef struct directory {
-  char name[FNAME_SIZE];            /*Directory name*/
+  char name[FNAME_SIZE];            /*Directory name. NOTE: directory name will ALWAYS end with '/'*/
   /*Creation, Last Modification and Last Access dates*/
   char creation[DATE_FORMAT_SIZE];
   char modification[DATE_FORMAT_SIZE];
   char access[DATE_FORMAT_SIZE];
-  /*Memory position (bitmap_index)*/
-  unsigned int bitmap_index;        /*Starting index in the bitmap array. Allocated in range [bitmap_index, bitmap_index + ((size / 4000) + 1) - 1]*/
+  /*FAT first cluster*/
+  unsigned int fat_index;           /*First cluster index in file allocation table*/
   /*Files*/
   File *f;                          /*"Head" file of the file lists. If directory has no files, f = NULL. This list contains the files in this directory*/
   /*Directories*/

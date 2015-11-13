@@ -16,8 +16,5 @@ uint8_t bitmap[BITMAP_SIZE];
 
 /*Prototypes*/
 void bitmap_init_new();
-unsigned int total_free_space();
-unsigned int total_wasted_space();
-unsigned int required_clusters(unsigned int);
 
 #endif
