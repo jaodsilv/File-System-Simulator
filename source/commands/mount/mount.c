@@ -80,8 +80,8 @@ void load_binary(char *fs, Directory *root_dir)
     unsigned int blocks_allocated = FRESH_FS - free_blocks[0];
 
     for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i+=4000) {
+      char name[1024];
       bool is_a_file = false;
-      char character[1], name[1024];
       unsigned int j, number[1], number2[1];
       Directory *dir_node = NULL;
       File *file_node = NULL;
@@ -177,7 +177,6 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
 
   p = root_dir;
   while(name_from_binary[i] != '\0') {
-    unsigned int j;
     char file_name[1024];
 
     if(name_from_binary[i + 1] != '\0' && name_from_binary[i + 1] != '/') { i++; continue; }
@@ -238,6 +237,8 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
       i++; continue;
     }
   }
+  if(dir_node != NULL) file_node = NULL;
+  else if(file_node != NULL) dir_node = NULL;
 }
 
 /*Check if the tree contains the file with name 'name_from_binary'*/
@@ -249,7 +250,6 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
 
   p = root_dir;
   while(name_from_binary[i] != '\0') {
-    unsigned int j;
     char file_name[1024];
 
     if(name_from_binary[i + 1] != '\0' && name_from_binary[i + 1] != '/') { i++; continue; }
@@ -284,6 +284,8 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
       i++; continue;
     }
   }
+  if(dir_node != NULL) file_node = NULL;
+  else if(file_node != NULL) dir_node = NULL;
   return false;
 }
 

@@ -14,5 +14,7 @@ int cmd_mount(char *, int, char **, Directory *, bool);
 void init_binary_info(char *, Directory *);
 void load_binary(char *, Directory *);
 void get_and_format_time(char *);
+bool tree_contains_file(Directory *, char *, Directory *, File *);
+void build_nodes(Directory *, char *, Directory *, File *);
 
 #endif
