@@ -15,5 +15,4 @@ void init_binary_info(char *, Directory *);
 void load_binary(char *, Directory *);
 void get_and_format_time(char *);
 
-
 #endif

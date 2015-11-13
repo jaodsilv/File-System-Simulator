@@ -54,17 +54,17 @@ void load_binary(char *fs, Directory *root_dir)
   /*Move stream pointer to another position (root directory name)*/
   fseek(p, ROOT_DIR_NAME, SEEK_SET);
   /*Read the root directory name from the binary file*/
-  fread(root_dir->name, sizeof(char), 2, p);
+  fread(root_dir->name, sizeof(char), strlen(ROOT) + 1, p);
   /*Move stream pointer to another position (root directory creation time)*/
   fseek(p, ROOT_DIR_CREAT, SEEK_SET);
   /*Read the root directory creation time from the binary file*/
-  fread(root_dir->creation, sizeof(char), 20, p);
+  fread(root_dir->creation, sizeof(char), DATE_FORMAT_SIZE, p);
   /*Do the same for modification time*/
   fseek(p, ROOT_DIR_MODIF, SEEK_SET);
-  fread(root_dir->modification, sizeof(char), 20, p);
+  fread(root_dir->modification, sizeof(char), DATE_FORMAT_SIZE, p);
   /*And for access time*/
   fseek(p, ROOT_DIR_ACCESS, SEEK_SET);
-  fread(root_dir->access, sizeof(char), 20, p);
+  fread(root_dir->access, sizeof(char), DATE_FORMAT_SIZE, p);
   /*These are root characteristics. The root is alone in the top level*/
   root_dir->parent = NULL;
   root_dir->next   = NULL;
@@ -108,21 +108,21 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*Move stream pointer to the next position (= root directory name)*/
   fseek(p, ROOT_DIR_NAME, SEEK_SET);
   /*Write the root directory name into the binary file*/
-  fwrite(ROOT, sizeof(char), 2, p);
+  fwrite(ROOT, sizeof(char), strlen(ROOT) + 1, p);
   strcpy(root_dir->name, ROOT);
   /*Move stream pointer to the next position (= root directory creation time)*/
   fseek(p, ROOT_DIR_CREAT, SEEK_SET);
   /*Write the root directory creation time into the binary file*/
   get_and_format_time(time);
-  fwrite(time, sizeof(char), 20, p);
+  fwrite(time, sizeof(char), DATE_FORMAT_SIZE, p);
   strcpy(root_dir->creation, time);
   /*Modification time is the same of the creation time to new files/folders*/
   fseek(p, ROOT_DIR_MODIF, SEEK_SET);
-  fwrite(time, sizeof(char), 20, p);
+  fwrite(time, sizeof(char), DATE_FORMAT_SIZE, p);
   strcpy(root_dir->modification, time);
   /*Access time is the same of the creation time to new files/folders*/
   fseek(p, ROOT_DIR_ACCESS, SEEK_SET);
-  fwrite(time, sizeof(char), 20, p);
+  fwrite(time, sizeof(char), DATE_FORMAT_SIZE, p);
   strcpy(root_dir->access, time);
 
   /*File must have (partition size)bytes*/
