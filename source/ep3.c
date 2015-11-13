@@ -2,16 +2,13 @@
 
 int main()
 {
-  Directory *root_dir;
+  Directory *root_dir = NULL;
   bool mounted = false, *ptrm = &mounted;
   int argc; char **argv = NULL;
-  char *cmd = NULL, *root = NULL;
+  char *cmd = NULL, *file_system = NULL;
 
+  /*Initialize root directory*/
   root_dir = malloc(sizeof(*root_dir));
-  /*Initialize bitmap. Set all positions to UNALLOCATED status*/
-  bitmap_init();
-  /*Initialize fat. Set all positions to NOT_IN_USE status*/
-  fat_init();
   /*Prompt history*/
   using_history();
   while(true) {
@@ -29,13 +26,13 @@ int main()
     /*Do file system request command*/
     if(cmd_mount(cmd, argc, argv, root_dir, mounted)) {
       if(argv[0][0] == '/') {
-        if(root != NULL) free(root);
-        root = malloc((strlen(argv[0]) + 1) * sizeof(*root));
-        strcpy(root, argv[0]);
+        if(file_system != NULL) free(file_system);
+        file_system = malloc((strlen(argv[0]) + 1) * sizeof(*file_system));
+        strcpy(file_system, argv[0]);
         mounted = true;
       }
     }
-    else if(cmd_umount(cmd, root, root_dir, mounted)) { mounted = false; }
+    else if(cmd_umount(cmd, file_system, root_dir, mounted)) { mounted = false; }
     else if(cmd_exit(cmd, ptrm)) { if(!mounted) break; }
     else unrecognized(cmd);
 
@@ -48,14 +45,13 @@ int main()
     }
   }
   free(cmd); cmd = NULL;
-  if(root != NULL) { free(root); root = NULL; }
+  free(root_dir); root_dir = NULL;
+  if(file_system != NULL) { free(file_system); file_system = NULL; }
   if(argv != NULL) {
     int i;
     for(i = 0; i < argc; i++) { free(argv[i]); argv[i] = NULL; }
     free(argv); argv = NULL;
   }
-  if(root_dir->name != NULL) { free(root_dir->name); root_dir->name = NULL; }
-  free(root_dir); root_dir = NULL;
   printf("Program terminated.\n");
   return 0;
 }
@@ -136,20 +132,3 @@ char **get_argv(char *cmd, int argc, char **argv)
 
 /*User invoked unknown command to ep1sh*/
 void unrecognized(char *cmd) { printf("Unrecognized command '%s'.\n", cmd); }
-
-/*Test Function*/
-void print_root_dir_info(Directory *root_dir, bool mounted)
-{
-  if(mounted) {
-    printf("My Root Directory:\n");
-    printf("Name: '%s'\n", root_dir->name);
-    printf("Creation Date: '%s'\n", root_dir->created);
-    printf("Modified Date: '%s'\n", root_dir->modified);
-    printf("Accessed Date: '%s'\n", root_dir->accessed);
-    printf("Parent: '%p'\n", (void*)root_dir->parent);
-    printf("Head File: '%p'\n", (void*)root_dir->f);
-    printf("Total files: '%d'\n", root_dir->files);
-    printf("Head Child Directory: '%p'\n", (void*)root_dir->d);
-    printf("Total Children Directories: '%d'\n", root_dir->children);
-  }
-}
