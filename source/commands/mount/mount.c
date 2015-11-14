@@ -84,7 +84,7 @@ void load_binary(char *fs, Directory *root_dir)
 
     for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i += 4000) {
       char name[FNAME_SIZE];
-      bool is_a_file = false;
+      bool is_a_file = false, *ptr = &is_a_file;
       unsigned int j;
       uint16_t number[1], number2[1];
       Directory dir_node[1];
@@ -97,9 +97,9 @@ void load_binary(char *fs, Directory *root_dir)
       /*UNUSED BLOCK*/
       if(name[0] == '\0') continue;
       /*If the tree does not contain the file, must construct every node till the file*/
-      if(!tree_contains_file(root_dir, name, dir_node, file_node)) build_nodes(root_dir, name, dir_node, file_node);
+      if(!tree_contains_file(root_dir, name, dir_node, file_node, ptr)) build_nodes(root_dir, name, dir_node, file_node, ptr);
       /*USED BLOCK*/
-      if(file_node != NULL) is_a_file = true;
+      /*if(*ptr) is_a_file = true;*/
       /*Assign bitmap index as allocated*/
       j = i + FD_BITMAP_INDEX;
       fseek(p, j, SEEK_SET);
@@ -143,6 +143,7 @@ void load_binary(char *fs, Directory *root_dir)
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
         fread(file_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+        if(--blocks_allocated == 0) break;
       }
       else {
         /*Assign first cluster*/
@@ -165,15 +166,15 @@ void load_binary(char *fs, Directory *root_dir)
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
         fread(dir_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+        if(--blocks_allocated == 0) break;
       }
-      if(--blocks_allocated == 0) break;
     }
   }
 
   fclose(p);
 }
 
-void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node)
+void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node, bool *ptr)
 {
   unsigned int i = 0;
   Directory *p = NULL;
@@ -238,6 +239,7 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
         if(p->f != NULL) p->f->prev = new;
         p->f = new;
         file_node[0] = *new;
+        *ptr = true;
       }
       i++; continue;
     }
@@ -245,7 +247,7 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
 }
 
 /*Check if the tree contains the file with name 'name_from_binary'*/
-bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node)
+bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node, bool *ptr)
 {
   unsigned int i = 1;
   Directory *p = NULL;
@@ -283,7 +285,7 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
         else q = q->next;
       }
       if(q == NULL) break;
-      else if(strcmp(q->name, name_from_binary) == 0) { file_node[0] = *q; return true; }
+      else if(strcmp(q->name, name_from_binary) == 0) { file_node[0] = *q; *ptr = true; return true; }
       i++; continue;
     }
   }
@@ -352,5 +354,4 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*For now, the root has no files or children directories*/
   root_dir->d  = NULL;
   root_dir->f  = NULL;
-
 }

@@ -83,11 +83,13 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
     unsigned int i;
     uint16_t fat_index, next_fat_index;
 
-    /*Write changes in the binary*/
+    /*Read from the binary*/
     fptr = fopen(fs, "rb");
     fat_index = t->fat_index;
+
     do {
       char data[DATA_LIMIT + 1];
+
 
       next_fat_index = fat[fat_index];
 
