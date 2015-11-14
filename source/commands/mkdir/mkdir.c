@@ -6,7 +6,7 @@ int cmd_mkdir(char *cmd, int argc, char **argv, char *file_system, Directory *ro
     if(argv[0][0] == '/') {
       if(mounted) {
         /*If not exist, trigger error message*/
-        if((fopen(file_system, "r+b")) == NULL)
+        if((fopen(file_system, "rb")) == NULL)
           printf("Unable to locate file system '%s'.\n", file_system);
         /*Else, attempt to create a new directory*/
         else {
@@ -108,7 +108,7 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
     bitmap[new->fat_index] = ALLOCATED;
 
     /*Write changes in the binary*/
-    fptr = fopen(fs, "w+b");
+    fptr = fopen(fs, "r+b");
     /*Write free blocks*/
     number[0] = bitmap_free_blocks();
     fseek(fptr, SUPERBLOCK, SEEK_SET);
@@ -147,6 +147,7 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
     fwrite(new->name, sizeof(char), strlen(new->name) + 1, fptr);
 
     fclose(fptr);
+
   }
   return SUCCESS;
 }

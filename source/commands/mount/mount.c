@@ -5,10 +5,9 @@ int cmd_mount(char *cmd, int argc, char **argv, Directory *root_dir, bool mounte
   if(strncmp(cmd, "mount", 5) == 0 && argc == 1) {
     if(argv[0][0] == '/') {
       if(!mounted) {
-
         printf("Attempting to mount file system '%s'...\n", argv[0]);
         /*If not exist, creates a new binary*/
-        if((fopen(argv[0], "r+b")) == NULL) {
+        if((fopen(argv[0], "rb")) == NULL) {
           printf("Unable to find file system '%s'.\nInitializing a new file system... ", argv[0]);
           /*Write file system fresh info*/
           init_binary_info(argv[0], root_dir);
@@ -16,7 +15,7 @@ int cmd_mount(char *cmd, int argc, char **argv, Directory *root_dir, bool mounte
         }
         /*Else, then it exists. Must read & load the binary*/
         else {
-          printf("The file system '%s' has been found!\nThe program will now load the file system... ", argv[0]);
+          printf("The file system '%s' has been found!\nThe program will now load the file system...", argv[0]);
           load_binary(argv[0], root_dir);
           printf("Done!\n");
         }
@@ -38,9 +37,10 @@ void load_binary(char *fs, Directory *root_dir)
   unsigned int i;
   uint16_t free_blocks[1];
 
-  p = fopen(fs, "r+b");
-  /*Free Blocks*/
+  p = fopen(fs, "rb");
+  /*Free blocks*/
   fseek(p, SUPERBLOCK, SEEK_SET);
+  /*Read the bitmap from the binary file*/
   fread(free_blocks, sizeof(uint16_t), 1, p);
 
   /*Load bitmap*/
@@ -59,7 +59,8 @@ void load_binary(char *fs, Directory *root_dir)
   /*Move stream pointer to another position (root directory name)*/
   fseek(p, ROOT_DIR_NAME, SEEK_SET);
   /*Read the root directory name from the binary file*/
-  fread(root_dir->name, sizeof(char), strlen(ROOT) + 1, p);
+  fread(root_dir->name, sizeof(char), 2, p);
+
   /*Move stream pointer to another position (root directory creation time)*/
   fseek(p, ROOT_DIR_CREAT, SEEK_SET);
   /*Read the root directory creation time from the binary file*/
@@ -81,19 +82,18 @@ void load_binary(char *fs, Directory *root_dir)
   if(free_blocks[0] != FRESH_FS) {
     unsigned int blocks_allocated = FRESH_FS - free_blocks[0];
 
-    for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i+=4000) {
-      char name[1024];
+    for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i += 4000) {
+      char name[FNAME_SIZE];
       bool is_a_file = false;
       unsigned int j;
       uint16_t number[1], number2[1];
       Directory dir_node[1];
       File file_node[1];
 
-
       /*First check if this block is used*/
       j = i + FD_NAME;
       fseek(p, j, SEEK_SET);
-      fread(name, sizeof(char), 1024, p);
+      fread(name, sizeof(char), FNAME_SIZE, p);
       /*UNUSED BLOCK*/
       if(name[0] == '\0') continue;
       /*If the tree does not contain the file, must construct every node till the file*/
@@ -341,6 +341,7 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*File must have (partition size)bytes*/
   fseek(p, PARTITION_SIZE, SEEK_SET);
   fputc('\n', p);
+
   fclose(p);
 
   /*These are root characteristics. The root is alone in the top level*/
@@ -350,4 +351,5 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*For now, the root has no files or children directories*/
   root_dir->d  = NULL;
   root_dir->f  = NULL;
+
 }
