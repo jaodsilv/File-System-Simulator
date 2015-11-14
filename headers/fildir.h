@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 /*Size of DATE_FORMAT*/
 #define DATE_FORMAT_SIZE 20
@@ -46,5 +47,6 @@ typedef struct directory {
 } Directory;
 
 void get_and_format_time(char *);
+void get_path(char *, char *);
 
 #endif

@@ -16,6 +16,5 @@
 
 int cmd_mkdir(char *, int, char **, char *, Directory *, bool);
 int create_dir(char *, char *, Directory *);
-void get_path(char *, char *);
 
 #endif

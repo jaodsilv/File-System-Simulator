@@ -11,3 +11,13 @@ void get_and_format_time(char *output)
       timeinfo->tm_year + 1900, timeinfo->tm_hour,
       timeinfo->tm_min, timeinfo->tm_sec);
 }
+
+/*Get path from an absolute name*/
+void get_path(char *path, char *absolute_name)
+{
+  unsigned int i, str_size;
+  for(i = strlen(absolute_name) - 2; absolute_name[i] != '/'; i--) continue;
+  str_size = i + 1;
+  strncpy(path, absolute_name, str_size);
+  path[str_size] = '\0';
+}

@@ -47,8 +47,8 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
   /*Directory names must have less than 1024 characters (including the null terminator)
     and must start and finish with '/' character*/
   dir_abs_name[0] = '\0';
-  if(dir_name[strlen(dir_name) - 1] != '/' && strlen(dir_name) < FNAME_SIZE - 1) strcat(strcpy(dir_abs_name, dir_name), "/");
-  else if(dir_name[strlen(dir_name) - 1] == '/' && strlen(dir_name) < FNAME_SIZE) strcpy(dir_abs_name, dir_name);
+  if(dir_name[strlen(dir_name) - 1] != '/' && strlen(dir_name) + 2 < FNAME_SIZE) strcat(strcpy(dir_abs_name, dir_name), "/");
+  else if(dir_name[strlen(dir_name) - 1] == '/' && strlen(dir_name) + 1 < FNAME_SIZE) strcpy(dir_abs_name, dir_name);
   else return TOO_LARGE;
 
   /*dir_abs_name contains the directory name. We will now extract the path
@@ -80,7 +80,7 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
   }
 
   /*Check if parent already have a child directory named with the choosen name*/
-  if(1) {
+  if(p != NULL) {
     Directory *t;
     for(t = p->d; t != NULL; t = t->next)
       if(strcmp(dir_abs_name, t->name) == 0)
@@ -161,14 +161,4 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
 
   }
   return SUCCESS;
-}
-
-/*Get path from an absolute name*/
-void get_path(char *path, char *absolute_name)
-{
-  unsigned int i, str_size;
-  for(i = strlen(absolute_name) - 2; absolute_name[i] != '/'; i--) continue;
-  str_size = i + 1;
-  strncpy(path, absolute_name, str_size);
-  path[str_size] = '\0';
 }
