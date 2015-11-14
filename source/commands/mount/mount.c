@@ -8,7 +8,7 @@ int cmd_mount(char *cmd, int argc, char **argv, Directory *root_dir, bool mounte
 
         printf("Attempting to mount file system '%s'...\n", argv[0]);
         /*If not exist, creates a new binary*/
-        if((fopen(argv[0], "rb")) == NULL) {
+        if((fopen(argv[0], "r+b")) == NULL) {
           printf("Unable to find file system '%s'.\nInitializing a new file system... ", argv[0]);
           /*Write file system fresh info*/
           init_binary_info(argv[0], root_dir);
@@ -34,13 +34,14 @@ int cmd_mount(char *cmd, int argc, char **argv, Directory *root_dir, bool mounte
 /*Loads a binary file system previously created*/
 void load_binary(char *fs, Directory *root_dir)
 {
-  unsigned int i, free_blocks[1];
   FILE *p = NULL;
+  unsigned int i;
+  uint16_t free_blocks[1];
 
-  p = fopen(fs, "rb");
+  p = fopen(fs, "r+b");
   /*Free Blocks*/
   fseek(p, SUPERBLOCK, SEEK_SET);
-  fread(free_blocks, sizeof(unsigned int), 1, p);
+  fread(free_blocks, sizeof(uint16_t), 1, p);
 
   /*Load bitmap*/
   /*Move stream pointer to the wanted position (= bitmap position)*/
@@ -83,9 +84,11 @@ void load_binary(char *fs, Directory *root_dir)
     for(i = FILES_AND_SUBDIR; i < PARTITION_SIZE; i+=4000) {
       char name[1024];
       bool is_a_file = false;
-      unsigned int j, number[1], number2[1];
-      Directory *dir_node = NULL;
-      File *file_node = NULL;
+      unsigned int j;
+      uint16_t number[1], number2[1];
+      Directory dir_node[1];
+      File file_node[1];
+
 
       /*First check if this block is used*/
       j = i + FD_NAME;
@@ -100,16 +103,16 @@ void load_binary(char *fs, Directory *root_dir)
       /*Assign bitmap index as allocated*/
       j = i + FD_BITMAP_INDEX;
       fseek(p, j, SEEK_SET);
-      fread(number, sizeof(unsigned int), 1, p);
+      fread(number, sizeof(uint16_t), 1, p);
       bitmap[number[0]] = ALLOCATED;
       /*Retrieve FAT index and content*/
       /*Assign FAT index with its correct content*/
       j = i + FD_FAT_INDEX;
       fseek(p, j, SEEK_SET);
-      fread(number, sizeof(unsigned int), 1, p);
+      fread(number, sizeof(uint16_t), 1, p);
       j = i + FD_FAT_CONTENT;
       fseek(p, j, SEEK_SET);
-      fread(number2, sizeof(unsigned int), 1, p);
+      fread(number2, sizeof(uint16_t), 1, p);
       fat[number[0]] = number2[0];
 
       /*Assign general values to node. NOTE: The following values must be equal to all blocks of the same file*/
@@ -117,13 +120,13 @@ void load_binary(char *fs, Directory *root_dir)
         /*Assign first cluster*/
         j = i + FD_FAT_FIRST_INDEX;
         fseek(p, j, SEEK_SET);
-        fread(number, sizeof(unsigned int), 1, p);
+        fread(number, sizeof(uint16_t), 1, p);
         file_node->fat_index = number[0];
 
         /*Assign file size*/
         j = i + FILE_SIZE;
         fseek(p, j, SEEK_SET);
-        fread(number, sizeof(unsigned int), 1, p);
+        fread(number, sizeof(uint16_t), 1, p);
         file_node->size = number[0];
 
         /*Assign file creation date*/
@@ -145,7 +148,7 @@ void load_binary(char *fs, Directory *root_dir)
         /*Assign first cluster*/
         j = i + FD_FAT_FIRST_INDEX;
         fseek(p, j, SEEK_SET);
-        fread(number, sizeof(unsigned int), 1, p);
+        fread(number, sizeof(uint16_t), 1, p);
         dir_node->fat_index = number[0];
 
         /*Assign file creation date*/
@@ -208,7 +211,7 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
         new->prev = NULL;
         if(parent->d != NULL) parent->d->prev = new;
         parent->d = new;
-        dir_node = new;
+        dir_node[0] = *new;
       }
       i += 2; continue;
     }
@@ -233,15 +236,11 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
         new->prev = NULL;
         if(p->f != NULL) p->f->prev = new;
         p->f = new;
-        file_node = new;
+        file_node[0] = *new;
       }
       i++; continue;
     }
   }
-
-  /*Just to remove "variable set but not used" warnings...*/
-  if(dir_node != NULL) file_node = NULL;
-  else if(file_node != NULL) dir_node = NULL;
 }
 
 /*Check if the tree contains the file with name 'name_from_binary'*/
@@ -268,7 +267,7 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
         else p = p->next;
       }
       if(p == NULL) break;
-      else if(strcmp(p->name, name_from_binary) == 0) { dir_node = p; return true; }
+      else if(strcmp(p->name, name_from_binary) == 0) { dir_node[0] = *p; return true; }
       i += 2; continue;
     }
     /*If its a file*/
@@ -283,14 +282,10 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
         else q = q->next;
       }
       if(q == NULL) break;
-      else if(strcmp(q->name, name_from_binary) == 0) { file_node = q; return true; }
+      else if(strcmp(q->name, name_from_binary) == 0) { file_node[0] = *q; return true; }
       i++; continue;
     }
   }
-
-  /*Just to remove "variable set but not used" warnings...*/
-  if(dir_node != NULL) file_node = NULL;
-  else if(file_node != NULL) dir_node = NULL;
   return false;
 }
 
@@ -299,14 +294,14 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
 void init_binary_info(char *fs, Directory *root_dir)
 {
   char time[DATE_FORMAT_SIZE];
-  unsigned int number[1];
+  uint16_t number[1];
   FILE *p = NULL;
 
   p = fopen(fs, "wb");
 
   /*Write number of free blocks*/
   number[0] = TOTAL_BLOCKS - FD_FIRST_BLOCK;
-  fwrite(number, sizeof(unsigned int), 1, p);
+  fwrite(number, sizeof(uint16_t), 1, p);
 
   /*Initialize bitmap*/
   /*Move stream pointer to the next position (= bitmap position)*/
