@@ -1,5 +1,8 @@
 #ifndef FILDIR_H
 #define FILDIR_H
+#include <time.h>
+#include <stdio.h>
+#include <stdint.h>
 
 /*Size of DATE_FORMAT*/
 #define DATE_FORMAT_SIZE 20
@@ -18,7 +21,7 @@ typedef struct file {
   /*Data + Metadata size*/
   unsigned int size;                /*File total size. This is, Data + Metadata*/
   /*FAT first cluster*/
-  unsigned int fat_index;           /*First cluster index in file allocation table*/
+  uint16_t fat_index;               /*First cluster index in file allocation table*/
   /*File list management*/
   struct file *next;                /*Pointer to the next file. If tail, next = NULL*/
   struct file *prev;                /*Pointer to the previous file. If head, prev = NULL*/
@@ -32,7 +35,7 @@ typedef struct directory {
   char modification[DATE_FORMAT_SIZE];
   char access[DATE_FORMAT_SIZE];
   /*FAT first cluster*/
-  unsigned int fat_index;           /*First cluster index in file allocation table*/
+  uint16_t fat_index;               /*First cluster index in file allocation table*/
   /*Files*/
   File *f;                          /*"Head" file of the file lists. If directory has no files, f = NULL. This list contains the files in this directory*/
   /*Directories*/
@@ -41,5 +44,7 @@ typedef struct directory {
   struct directory *next;           /*Pointer to the next child directory. If tail, next = NULL*/
   struct directory *prev;           /*Pointer to the previous child directory. If head, prev = NULL*/
 } Directory;
+
+void get_and_format_time(char *);
 
 #endif

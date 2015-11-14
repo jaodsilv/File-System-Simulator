@@ -39,6 +39,7 @@ void load_binary(char *fs, Directory *root_dir)
 
   p = fopen(fs, "rb");
   /*Free Blocks*/
+  fseek(p, SUPERBLOCK, SEEK_SET);
   fread(free_blocks, sizeof(unsigned int), 1, p);
 
   /*Load bitmap*/
@@ -171,13 +172,13 @@ void load_binary(char *fs, Directory *root_dir)
 
 void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_node, File *file_node)
 {
-  unsigned int i = 1;
+  unsigned int i = 0;
   Directory *p = NULL;
   File *q = NULL;
 
   p = root_dir;
   while(name_from_binary[i] != '\0') {
-    char file_name[1024];
+    char file_name[FNAME_SIZE];
 
     if(name_from_binary[i + 1] != '\0' && name_from_binary[i + 1] != '/') { i++; continue; }
     /*if its a directory*/
@@ -237,6 +238,8 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
       i++; continue;
     }
   }
+
+  /*Just to remove "variable set but not used" warnings...*/
   if(dir_node != NULL) file_node = NULL;
   else if(file_node != NULL) dir_node = NULL;
 }
@@ -284,6 +287,8 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
       i++; continue;
     }
   }
+
+  /*Just to remove "variable set but not used" warnings...*/
   if(dir_node != NULL) file_node = NULL;
   else if(file_node != NULL) dir_node = NULL;
   return false;
@@ -293,7 +298,7 @@ bool tree_contains_file(Directory *root_dir, char *name_from_binary, Directory *
 /*Write recently created binary info*/
 void init_binary_info(char *fs, Directory *root_dir)
 {
-  char time[20];
+  char time[DATE_FORMAT_SIZE];
   unsigned int number[1];
   FILE *p = NULL;
 
@@ -350,16 +355,4 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*For now, the root has no files or children directories*/
   root_dir->d  = NULL;
   root_dir->f  = NULL;
-}
-
-/*Get the local time and write it in the following format: DD/MM/YYYY HH:MM:SS*/
-void get_and_format_time(char *output)
-{
-    time_t rawtime;
-    struct tm *timeinfo;
-
-    time(&rawtime); timeinfo = localtime(&rawtime);
-    sprintf(output, "%d/%d/%d %d:%d:%d",timeinfo->tm_mday, timeinfo->tm_mon + 1,
-      timeinfo->tm_year + 1900, timeinfo->tm_hour,
-      timeinfo->tm_min, timeinfo->tm_sec);
 }

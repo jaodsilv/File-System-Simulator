@@ -18,5 +18,6 @@
 uint16_t fat[FAT_SIZE];
 
 void fat_init_new();
+uint16_t fat_get_index();
 
 #endif

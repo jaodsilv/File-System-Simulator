@@ -16,5 +16,7 @@ uint8_t bitmap[BITMAP_SIZE];
 
 /*Prototypes*/
 void bitmap_init_new();
+bool bitmap_available_memory(unsigned int);
+uint16_t bitmap_free_blocks();
 
 #endif

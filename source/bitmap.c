@@ -9,3 +9,23 @@ void bitmap_init_new()
     else bitmap[i] = UNALLOCATED;
   }
 }
+
+bool bitmap_available_memory(unsigned int size)
+{
+  unsigned int i, j = size;
+  for(i = 0; i < BITMAP_SIZE; i++) {
+    if(bitmap[i] == UNALLOCATED) {
+      if(j > BLOCK_SIZE) j -= BLOCK_SIZE;
+      else return true;
+    }
+  }
+  return false;
+}
+
+uint16_t bitmap_free_blocks()
+{
+  uint16_t count = 0;
+  unsigned int i;
+  for(i = 0; i < BITMAP_SIZE; i++) if(bitmap[i] == UNALLOCATED) count++;
+  return count;
+}
