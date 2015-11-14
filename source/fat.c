@@ -16,3 +16,17 @@ uint16_t fat_get_index()
   for(i = 0; i < FAT_SIZE; i++) if(fat[i] == AVAILABLE) break;
   return i;
 }
+
+uint16_t fat_necessary_amount_of_blocks(unsigned int size)
+{
+  uint16_t blocks_needed = 0;
+  unsigned int j = size;
+
+  while(1) {
+    if(j >= DATA_LIMIT) { j -= DATA_LIMIT; blocks_needed++; }
+    else break;
+  }
+
+  if(j == 0) return blocks_needed;
+  else return blocks_needed + 1;
+}

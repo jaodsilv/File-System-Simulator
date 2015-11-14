@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "bitmap.h"
 #include "fildir.h"
+#include "partition.h"
 
 /*File Allocation Table (fat) size is the total number of blocks*/
 #define FAT_SIZE BITMAP_SIZE
@@ -19,5 +20,6 @@ uint16_t fat[FAT_SIZE];
 
 void fat_init_new();
 uint16_t fat_get_index();
+uint16_t fat_necessary_amount_of_blocks(unsigned int);
 
 #endif

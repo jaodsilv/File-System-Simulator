@@ -1,5 +1,5 @@
-ep3: ep3.o bitmap.o fat.o fildir.o exit.o mkdir.o mount.o touch.o umount.o
-	gcc -o ep3 ep3.o bitmap.o fat.o fildir.o exit.o mkdir.o mount.o touch.o umount.o -lreadline -g
+ep3: ep3.o bitmap.o fat.o fildir.o cp.o exit.o mkdir.o mount.o touch.o umount.o
+	gcc -o ep3 ep3.o bitmap.o fat.o fildir.o cp.o exit.o mkdir.o mount.o touch.o umount.o -lreadline -g
 
 ep3.o: source/ep3.c
 	gcc -c source/ep3.c -Wall -Wextra -pedantic -g
@@ -12,6 +12,9 @@ fat.o: source/fat.c
 
 fildir.o: source/fildir.c
 	gcc -c source/fildir.c -Wall -Wextra -pedantic -g
+
+cp.o: source/commands/cp/cp.c
+	gcc -c source/commands/cp/cp.c -Wall -Wextra -pedantic -g
 
 exit.o: source/commands/exit/exit.c
 	gcc -c source/commands/exit/exit.c -Wall -Wextra -pedantic -g

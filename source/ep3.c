@@ -32,6 +32,7 @@ int main()
         mounted = true;
       }
     }
+    else if(cmd_cp(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_mkdir(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_touch(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_umount(cmd, file_system, root_dir, mounted)) { mounted = false; }

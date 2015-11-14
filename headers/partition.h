@@ -39,4 +39,7 @@ is the root, the value is stored in the variable named "root" in ep3.c*/
 #define FILE_DATA            FD_ADATE + DATE_FORMAT_SIZE   /*File contents. If doesn't fit, must use another block. Consumes remaining 2884 bytes*/
 #define NEXT_BLOCK           4000                          /*Add this to the pointer location in a fseek call, multiplied by i [0, last block]*/
 
+/*Metadata consumes the first 1100 bytes of the block, leaving the remaining 2900 bytes to data*/
+#define DATA_LIMIT           2900
+
 #endif
