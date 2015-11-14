@@ -20,6 +20,8 @@ int cmd_mkdir(char *cmd, int argc, char **argv, char *file_system, Directory *ro
             printf("\nBad path: Missing a previous directory in '%s'. Operation failed.\n", argv[0]);
           else if(ret == TOO_LARGE)
             printf("\nBad name: directory name '%s' has more than 1023 characters. Operation failed.\n", argv[0]);
+          else if(ret == NOT_UNIQUE)
+            printf("\nBad name: there is already a directory named '%s'. Operation failed.\n", argv[0]);
         }
       }
       else
@@ -77,6 +79,15 @@ int create_dir(char *fs, char *dir_name, Directory *root_dir)
     }
   }
 
+  /*Check if parent already have a child directory named with the choosen name*/
+  if(1) {
+    Directory *t;
+    for(t = p->d; t != NULL; t = t->next)
+      if(strcmp(dir_abs_name, t->name) == 0)
+        return NOT_UNIQUE;
+  }
+
+  /*Create new directory, FINALLY! :D */
   if(p == NULL) return BAD_PATH;
   else {
     FILE *fptr;
