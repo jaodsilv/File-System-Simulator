@@ -111,13 +111,11 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
   /*Check if parent already have a file named with the choosen name.*/
   if(p != NULL) {
     File *t;
-    if(p->f == NULL) printf("\n\nFDP! %s\n\n", p->name);
-    for(t = p->f; t != NULL; t = t->next) {
+    for(t = p->f; t != NULL; t = t->next)
       if(strcmp(file_abs_name, t->name) == 0) {
         strcpy(bad_name, file_abs_name);
         return NOT_UNIQUE_CP;
       }
-    }
   }
 
   /*Create new file, FINALLY! :D */
@@ -148,6 +146,9 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
     /*Write changes to the binary*/
     fptr = fopen(fs, "r+b");
     fat_index = new->fat_index;
+    /*Update FAT and Bitmap*/
+    fat[fat_index] = END_OF_FILE;
+
     for(blocks = fat_necessary_amount_of_blocks(new->size); blocks > 0; blocks--) {
       char data[DATA_LIMIT];
       unsigned int fsize[1];
@@ -159,7 +160,6 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
       /*Update FAT and Bitmap*/
       fat[fat_index] = next_fat_index;
       bitmap[fat_index] = ALLOCATED;
-
 
       /*Write free blocks*/
       number[0] = bitmap_free_blocks();
@@ -216,7 +216,10 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
       fwrite(data, sizeof(char), DATA_LIMIT, fptr);
 
       /*Prepare fat_index and block_pos to next iteration*/
-      fat_index = next_fat_index;
+      if(blocks > 1) {
+        fat_index = fat[fat_index];
+        fat[fat_index] = END_OF_FILE;
+      }
       block_pos++;
     }
     fclose(fptr);

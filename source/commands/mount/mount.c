@@ -179,6 +179,7 @@ void build_nodes(Directory *root_dir, char *name_from_binary, Directory *dir_nod
   Directory *p = NULL;
   File *q = NULL;
 
+
   p = root_dir;
   while(name_from_binary[i] != '\0') {
     char file_name[FNAME_SIZE];
