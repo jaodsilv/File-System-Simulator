@@ -13,7 +13,7 @@ int cmd_cp(char *cmd, int argc, char **argv, char *file_system, Directory *root_
         /*Else, attempt to create a new directory*/
         else {
           int ret;
-          printf("Attempting to create the new directory '%s'...", argv[0]);
+          printf("Attempting to copy the file '%s' into '%s'...", argv[0], argv[1]);
           if((ret = copy_file(file_system, argv[0], argv[1], root_dir, bad_name)) == SUCCESS_CP)
             printf("Done!\n");
           else if(ret == NO_MEM_CP)
@@ -25,7 +25,7 @@ int cmd_cp(char *cmd, int argc, char **argv, char *file_system, Directory *root_
           else if(ret == TOO_LARGE_CP)
             printf("\nBad name: file name '%s' has more than 1023 characters. Operation failed.\n", argv[1]);
           else if(ret == NOT_UNIQUE_CP)
-            printf("\nBad name: there is already a file named '%s'. Operation failed.\n", bad_name);          
+            printf("\nBad name: there is already a file named '%s'. Operation failed.\n", bad_name);
         }
       }
       else
@@ -66,6 +66,7 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
     and must start and finish with '/' character*/
   file_abs_name[0] = '\0';
   if(file_name[strlen(file_name) - 1] != '/') strcat(strcpy(file_abs_name, file_name), "/");
+  else strcpy(file_abs_name, file_name);
 
   /*Must get the file name from rfs_file_name*/
   if(rfs_file_name[strlen(rfs_file_name) - 1] != '/') {
@@ -110,11 +111,13 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
   /*Check if parent already have a file named with the choosen name.*/
   if(p != NULL) {
     File *t;
-    for(t = p->f; t != NULL; t = t->next)
+    if(p->f == NULL) printf("\n\nFDP! %s\n\n", p->name);
+    for(t = p->f; t != NULL; t = t->next) {
       if(strcmp(file_abs_name, t->name) == 0) {
         strcpy(bad_name, file_abs_name);
         return NOT_UNIQUE_CP;
       }
+    }
   }
 
   /*Create new file, FINALLY! :D */
