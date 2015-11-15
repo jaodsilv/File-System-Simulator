@@ -398,11 +398,13 @@ File *retrieve_file_node(Directory *root_dir, char *name)
   /*Search the tree for the node*/
   p = root_dir;
   while(name[i] != '\0') {
-    p = p->d;
     last = i;
-    for(i = last; name[i] != '/'; i++) {
-      if(name[i] == p->name[i]) continue;
-      i = last - 1; p = p->next;
+    if(p->d != NULL) {
+      p = p->d;
+      for(i = last; name[i] != '/'; i++) {
+        if(name[i] == p->name[i]) continue;
+        i = last - 1; p = p->next;
+      }
     }
     i = last;
     q = p->f;
