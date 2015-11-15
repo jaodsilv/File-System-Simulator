@@ -13,7 +13,7 @@ is the root, the value is stored in the variable named "root" in ep3.c*/
 #define BLOCK_SIZE     4000
 /*Total number of blocks*/
 #define TOTAL_BLOCKS   PARTITION_SIZE / BLOCK_SIZE
-#define FRESH_FS       24968                               /*Number of free blocks in a file system that contains only the root directory*/
+#define FRESH_FS       24981                               /*Number of free blocks in a file system that contains only the root directory*/
 
 /*Binary Layout Positions*/
 #define SUPERBLOCK       0                                 /*Superblock contains the number of free blocks.*/

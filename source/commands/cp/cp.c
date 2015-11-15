@@ -152,6 +152,7 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
     for(blocks = fat_necessary_amount_of_blocks(new->size); blocks > 0; blocks--) {
       char data[DATA_LIMIT];
       unsigned int fsize[1];
+      uint16_t number[1];
 
       /*Get the next free block*/
       if(blocks > 1) next_fat_index = fat_get_index();
@@ -219,9 +220,23 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
       if(blocks > 1) {
         fat_index = fat[fat_index];
         fat[fat_index] = END_OF_FILE;
+        bitmap[fat_index] = ALLOCATED;
       }
       block_pos++;
     }
+
+    /*Write free blocks*/
+    number[0] = bitmap_free_blocks();
+    fseek(fptr, SUPERBLOCK, SEEK_SET);
+    fwrite(number, sizeof(uint16_t), 1, fptr);
+
+    /*Write Bitmap*/
+    fseek(fptr, FREE_SPACE_BLOCK, SEEK_SET);
+    fwrite(bitmap, sizeof(uint8_t), BITMAP_SIZE, fptr);
+    /*Write FAT*/
+    fseek(fptr, FAT_BLOCK, SEEK_SET);
+    fwrite(fat, sizeof(uint16_t), FAT_SIZE, fptr);
+
     fclose(fptr);
   }
   return SUCCESS_CP;
