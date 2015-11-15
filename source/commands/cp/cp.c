@@ -14,8 +14,9 @@ int cmd_cp(char *cmd, int argc, char **argv, char *file_system, Directory *root_
         else {
           int ret;
           printf("Attempting to copy the file '%s' into '%s'...", argv[0], argv[1]);
-          if((ret = copy_file(file_system, argv[0], argv[1], root_dir, bad_name)) == SUCCESS_CP)
-            printf("Done!\n");
+          if((ret = copy_file(file_system, argv[0], argv[1], root_dir, bad_name)) == SUCCESS_CP) {
+            total_files++; printf("Done!\n");
+          }
           else if(ret == NO_MEM_CP)
             printf("\nThere is no remaining disk space. Operation failed.\n");
           else if(ret == BAD_PATH_R)

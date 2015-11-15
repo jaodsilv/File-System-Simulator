@@ -12,8 +12,9 @@ int cmd_mkdir(char *cmd, int argc, char **argv, char *file_system, Directory *ro
         else {
           int ret;
           printf("Attempting to create the new directory '%s'...", argv[0]);
-          if((ret = create_dir(file_system, argv[0], root_dir)) == SUCCESS)
-            printf("Done!\n");
+          if((ret = create_dir(file_system, argv[0], root_dir)) == SUCCESS) {
+            total_directories++; printf("Done!\n");
+          }
           else if(ret == NO_MEM)
             printf("\nThere is no remaining disk space. Operation failed.\n");
           else if(ret == BAD_PATH)

@@ -13,7 +13,7 @@ int cmd_cat(char *cmd, int argc, char **argv, char *file_system, Directory *root
           int ret;
           printf("Attempting to cat file '%s'...", argv[0]);
           if((ret = cat_file(file_system, argv[0], root_dir)) == SUCCESS)
-            printf("Done!\n");
+            printf("\n");
           else if(ret == BAD_PATH_CAT)
             printf("\nBad path: unable to find text file '%s'. Operation failed.\n", argv[0]);
         }

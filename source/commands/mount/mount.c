@@ -146,6 +146,8 @@ void load_binary(char *fs, Directory *root_dir)
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
         fread(ff->access, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        total_files++;
         if(--blocks_allocated == 0) break;
       }
       else {
@@ -173,11 +175,12 @@ void load_binary(char *fs, Directory *root_dir)
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
         fread(dd->access, sizeof(char), DATE_FORMAT_SIZE, p);
+
+        total_directories++;
         if(--blocks_allocated == 0) break;
       }
     }
   }
-
   fclose(p);
 }
 
@@ -361,6 +364,9 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*For now, the root has no files or children directories*/
   root_dir->d  = NULL;
   root_dir->f  = NULL;
+
+  total_files = 0;
+  total_directories = 0;
 }
 
 Directory *retrieve_dir_node(Directory *root_dir, char *name)

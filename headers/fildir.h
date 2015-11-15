@@ -46,6 +46,10 @@ typedef struct directory {
   struct directory *prev;           /*Pointer to the previous child directory. If head, prev = NULL*/
 } Directory;
 
+/*Globals*/
+unsigned int total_files;
+unsigned int total_directories;
+
 void get_and_format_time(char *);
 void get_path(char *, char *);
 

@@ -165,6 +165,8 @@ int touch_file(char *fs, char *file_name, Directory *root_dir)
     fwrite(new->name, sizeof(char), strlen(new->name) + 1, fptr);
 
     fclose(fptr);
+
+    total_files++;
   }
   return SUCCESS;
 }

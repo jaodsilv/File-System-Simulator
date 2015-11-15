@@ -12,8 +12,9 @@ int cmd_rm(char *cmd, int argc, char **argv, char *file_system, Directory *root_
         else {
           int ret;
           printf("Attempting to remove file '%s'...", argv[0]);
-          if((ret = remove_file(file_system, argv[0], root_dir)) == SUCCESS)
-            printf("Done!\n");
+          if((ret = remove_file(file_system, argv[0], root_dir)) == SUCCESS) {
+            total_files--; printf("Done!\n");
+          }
           else if(ret == BAD_PATH_RM)
             printf("\nBad path: unable to locate file '%s'. Operation failed.\n", argv[0]);
         }
@@ -72,7 +73,6 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
     }
   }
 
-
   /*Check if parent already have a file named with the choosen name. If yes, we got our guy*/
   if(p != NULL)
     for(t = p->f; t != NULL; t = t->next)
@@ -85,6 +85,7 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
     unsigned int i;
     char block[BLOCK_SIZE];
     uint16_t fat_index, next_fat_index, number[1];
+
 
     /*Update pointers. Isolate file t from the tree*/
     if(p->f == t) p->f = t->next;
@@ -111,6 +112,7 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
       fseek(fptr, i + FD_BITMAP_INDEX, SEEK_SET);
       fwrite(block, sizeof(char), BLOCK_SIZE, fptr);
 
+      if(next_fat_index == END_OF_FILE) break;
       /*Block erased. Get next block*/
       fat_index = next_fat_index;
     } while(fat[fat_index] != END_OF_FILE);
@@ -118,6 +120,9 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
     /*Update FAT & Bitmap*/
     fat[fat_index] = AVAILABLE;
     bitmap[fat_index] = UNALLOCATED;
+
+    fseek(fptr, (fat_index * BLOCK_SIZE) + FD_BITMAP_INDEX, SEEK_SET);
+    fwrite(block, sizeof(char), BLOCK_SIZE, fptr);
 
     /*Write free blocks*/
     number[0] = bitmap_free_blocks();
