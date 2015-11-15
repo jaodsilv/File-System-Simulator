@@ -42,6 +42,7 @@ int main()
     else if(cmd_rmdir(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_rm(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_ls(cmd, argc, argv, file_system, root_dir, mounted));
+    else if(cmd_find(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_touch(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_umount(cmd, file_system, root_dir, mounted)) { mounted = false; }
     else if(cmd_exit(cmd, ptrm)) { if(!mounted) break; }

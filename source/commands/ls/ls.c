@@ -10,9 +10,10 @@ int cmd_ls(char *cmd, int argc, char **argv, char *file_system, Directory *root_
           printf("Unable to locate file system '%s'.\n", file_system);
         /*Else, attempt to list files*/
         else {
-          Directory *listed = retrieve_dir(root_dir, argv[0]);
+          Directory *dir = retrieve_dir(root_dir, argv[0]);
           printf("Attempting to list '%s'...\n", argv[0]);
-          list(listed);
+          if (dir != NULL) list(dir);
+          else printf("Directory '%s' not found.\n", argv[0]);
         }
       }
       else
