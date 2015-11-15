@@ -30,5 +30,6 @@ int expand(char *);
 int get_argc(char *);
 char **get_argv(char *, int, char **);
 void unrecognized(char *);
+bool cmd_time(char *, int, char **, clock_t *);
 
 #endif

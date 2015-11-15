@@ -6,6 +6,7 @@ int main()
   bool mounted = false, *ptrm = &mounted;
   int argc; char **argv = NULL;
   char *cmd = NULL, *file_system = NULL;
+  clock_t *t = (clock_t*) malloc(sizeof(clock_t));
 
   total_files = 0;
   total_directories = 0;
@@ -35,6 +36,7 @@ int main()
         mounted = true;
       }
     }
+    else if(cmd_time(cmd, argc, argv, t));
     else if(cmd_cat(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_cp(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_df(cmd, file_system, mounted));
@@ -144,3 +146,18 @@ char **get_argv(char *cmd, int argc, char **argv)
 
 /*User invoked unknown command to ep1sh*/
 void unrecognized(char *cmd) { printf("Unrecognized command '%s'.\n", cmd); }
+
+/* Update clock and print diff if needed */
+/* Time measured in clocks, so it will count just program activity */
+bool cmd_time(char *cmd, int argc, char **argv, clock_t *t) {
+  if(strncmp(cmd, "time", 4) == 0 && argc == 1) {
+    if (atoi(argv[0])) {
+      char c[100];
+      sprintf(c, "%f", ((float) clock() - *t)/CLOCKS_PER_SEC);
+      perror(c);
+    }
+    *t = clock();
+    return 1;
+  }
+  return 0;
+}
