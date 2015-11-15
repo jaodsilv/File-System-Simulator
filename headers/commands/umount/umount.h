@@ -7,5 +7,7 @@
 #include "../../fildir.h"
 
 int cmd_umount(char *, char *, Directory *, bool);
+void free_directories(Directory *);
+void free_files(File *);
 
 #endif
