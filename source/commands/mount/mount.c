@@ -99,7 +99,6 @@ void load_binary(char *fs, Directory *root_dir)
       /*If the tree does not contain the file, must construct every node till the file*/
       if(!tree_contains_file(root_dir, name, dir_node, file_node, ptr)) build_nodes(root_dir, name, dir_node, file_node, ptr);
       /*USED BLOCK*/
-      /*if(*ptr) is_a_file = true;*/
       /*Assign bitmap index as allocated*/
       j = i + FD_BITMAP_INDEX;
       fseek(p, j, SEEK_SET);
@@ -117,55 +116,63 @@ void load_binary(char *fs, Directory *root_dir)
 
       /*Assign general values to node. NOTE: The following values must be equal to all blocks of the same file*/
       if(is_a_file) {
+        File *ff;
+
+        ff = retrieve_file_node(root_dir, file_node->name);
+
         /*Assign first cluster*/
         j = i + FD_FAT_FIRST_INDEX;
         fseek(p, j, SEEK_SET);
         fread(number, sizeof(uint16_t), 1, p);
-        file_node->fat_index = number[0];
+        ff->fat_index = number[0];
 
         /*Assign file size*/
         j = i + FILE_SIZE;
         fseek(p, j, SEEK_SET);
         fread(number, sizeof(uint16_t), 1, p);
-        file_node->size = number[0];
+        ff->size = number[0];
 
         /*Assign file creation date*/
         j = i + FD_CDATE;
         fseek(p, j, SEEK_SET);
-        fread(file_node->creation, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(ff->creation, sizeof(char), DATE_FORMAT_SIZE, p);
 
         /*Assign file modification date*/
         j = i + FD_MDATE;
         fseek(p, j, SEEK_SET);
-        fread(file_node->modification, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(ff->modification, sizeof(char), DATE_FORMAT_SIZE, p);
 
         /*Assign file access date*/
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
-        fread(file_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(ff->access, sizeof(char), DATE_FORMAT_SIZE, p);
         if(--blocks_allocated == 0) break;
       }
       else {
+        Directory *dd;
+
+        dd = retrieve_dir_node(root_dir, dir_node->name);
+
         /*Assign first cluster*/
         j = i + FD_FAT_FIRST_INDEX;
         fseek(p, j, SEEK_SET);
         fread(number, sizeof(uint16_t), 1, p);
-        dir_node->fat_index = number[0];
+        dd->fat_index = number[0];
 
         /*Assign file creation date*/
         j = i + FD_CDATE;
         fseek(p, j, SEEK_SET);
-        fread(dir_node->creation, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(dd->creation, sizeof(char), DATE_FORMAT_SIZE, p);
 
         /*Assign file modification date*/
         j = i + FD_MDATE;
         fseek(p, j, SEEK_SET);
-        fread(dir_node->modification, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(dd->modification, sizeof(char), DATE_FORMAT_SIZE, p);
 
         /*Assign file access date*/
         j = i + FD_ADATE;
         fseek(p, j, SEEK_SET);
-        fread(dir_node->access, sizeof(char), DATE_FORMAT_SIZE, p);
+        fread(dd->access, sizeof(char), DATE_FORMAT_SIZE, p);
         if(--blocks_allocated == 0) break;
       }
     }
@@ -354,4 +361,51 @@ void init_binary_info(char *fs, Directory *root_dir)
   /*For now, the root has no files or children directories*/
   root_dir->d  = NULL;
   root_dir->f  = NULL;
+}
+
+Directory *retrieve_dir_node(Directory *root_dir, char *name)
+{
+  Directory *p;
+  unsigned int i = 1, last;
+
+  /*Search the tree for the node*/
+  p = root_dir;
+  while(name[i] != '\0') {
+    p = p->d;
+    last = i;
+    for(i = last; name[i] != '/' && name[i] != '\0'; i++) {
+      if(name[i] == p->name[i]) continue;
+      i = last - 1; p = p->next;
+    }
+    if(name[i] == '/') i++;
+  }
+
+  return p;
+}
+
+File *retrieve_file_node(Directory *root_dir, char *name)
+{
+  File *q;
+  Directory *p;
+  unsigned int i = 1, last;
+
+  /*Search the tree for the node*/
+  p = root_dir;
+  while(name[i] != '\0') {
+    p = p->d;
+    last = i;
+    for(i = last; name[i] != '/'; i++) {
+      if(name[i] == p->name[i]) continue;
+      i = last - 1; p = p->next;
+    }
+    i = last;
+    q = p->f;
+    for(i = last; name[i] != '\0' && q != NULL; i++) {
+      if(name[i] == q->name[i]) continue;
+      i = last - 1; q = q->next;
+    }
+    if(name[i] != '\0') i++;
+  }
+
+  return q;
 }

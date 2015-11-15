@@ -13,5 +13,7 @@ void init_binary_info(char *, Directory *);
 void load_binary(char *, Directory *);
 bool tree_contains_file(Directory *, char *, Directory *, File *, bool *);
 void build_nodes(Directory *, char *, Directory *, File *, bool *);
+Directory *retrieve_dir_node(Directory *, char *);
+File *retrieve_file_node(Directory *, char *);
 
 #endif

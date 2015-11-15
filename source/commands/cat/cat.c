@@ -87,9 +87,15 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
     fptr = fopen(fs, "rb");
     fat_index = t->fat_index;
 
+    printf("\n\n");
+    printf("t = %p\n", (void*)t);
+    printf("t->name = %s\n", t->name);
+    printf("t->size = %u\n", t->size);
+    printf("t->fat_index = %u\n", t->fat_index);
+    printf("\n\n");
+
     do {
       char data[DATA_LIMIT + 1];
-
 
       next_fat_index = fat[fat_index];
 
@@ -100,7 +106,7 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
       data[strlen(data)] = '\0';
 
       /*Prints data block*/
-      printf("%s", data);
+      fprintf(stderr,"%s", data);
 
       fat_index = next_fat_index;
     } while(fat[fat_index] != END_OF_FILE);
