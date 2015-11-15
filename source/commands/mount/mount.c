@@ -147,7 +147,7 @@ void load_binary(char *fs, Directory *root_dir)
         fseek(p, j, SEEK_SET);
         fread(ff->access, sizeof(char), DATE_FORMAT_SIZE, p);
 
-        total_files++;
+        if(number2[0] == END_OF_FILE) total_files++;
         if(--blocks_allocated == 0) break;
       }
       else {

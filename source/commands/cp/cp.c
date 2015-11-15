@@ -122,10 +122,11 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
   /*Create new file, FINALLY! :D */
   if(p == NULL) return BAD_PATH_S;
   else {
+    char data[DATA_LIMIT + 1];
     uint16_t block_pos = 0;
     FILE *fptr2;
     File *new;
-    uint16_t number[1], fat_index, next_fat_index, blocks;
+    uint16_t number[1], fat_index, blocks;
 
     new = malloc(sizeof(*new));
 
@@ -147,21 +148,15 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
     /*Write changes to the binary*/
     fptr = fopen(fs, "r+b");
     fat_index = new->fat_index;
-    /*Update FAT and Bitmap*/
-    fat[fat_index] = END_OF_FILE;
 
     for(blocks = fat_necessary_amount_of_blocks(new->size); blocks > 0; blocks--) {
-      char data[DATA_LIMIT];
-      unsigned int fsize[1];
+      unsigned int fsize[1], k = 0;
       uint16_t number[1];
 
-      /*Get the next free block*/
-      if(blocks > 1) next_fat_index = fat_get_index();
-      else next_fat_index = END_OF_FILE;
-
       /*Update FAT and Bitmap*/
-      fat[fat_index] = next_fat_index;
       bitmap[fat_index] = ALLOCATED;
+      if(blocks > 1) fat[fat_index] = fat_get_index();
+      else fat[fat_index] = END_OF_FILE;
 
       /*Write free blocks*/
       number[0] = bitmap_free_blocks();
@@ -209,6 +204,7 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
 
       /*Read next data block*/
       fptr2 = fopen(rfs_file_name, "rb");
+      for(k = 0; k < DATA_LIMIT; k++) data[k] = '\0';
       fseek(fptr2, block_pos * DATA_LIMIT, SEEK_SET);
       fread(data, sizeof(char), DATA_LIMIT, fptr2);
       fclose(fptr2);
@@ -217,12 +213,9 @@ int copy_file(char *fs, char *rfs_file_name, char *file_name, Directory *root_di
       fseek(fptr, i + FILE_DATA, SEEK_SET);
       fwrite(data, sizeof(char), DATA_LIMIT, fptr);
 
+
       /*Prepare fat_index and block_pos to next iteration*/
-      if(blocks > 1) {
-        fat_index = fat[fat_index];
-        fat[fat_index] = END_OF_FILE;
-        bitmap[fat_index] = ALLOCATED;
-      }
+      if(blocks > 1) fat_index = fat[fat_index];
       block_pos++;
     }
 

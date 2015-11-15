@@ -11,7 +11,7 @@ int cmd_cat(char *cmd, int argc, char **argv, char *file_system, Directory *root
         /*Else, attempt to create a new directory*/
         else {
           int ret;
-          printf("Attempting to cat file '%s'...", argv[0]);
+          printf("Attempting to cat file '%s'...\n", argv[0]);
           if((ret = cat_file(file_system, argv[0], root_dir)) == SUCCESS)
             printf("\n");
           else if(ret == BAD_PATH_CAT)
@@ -81,7 +81,7 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
   else {
     FILE *fptr;
     unsigned int i;
-    uint16_t fat_index, next_fat_index;
+    uint16_t fat_index;
 
     /*Read from the binary*/
     fptr = fopen(fs, "rb");
@@ -90,7 +90,7 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
     do {
       char data[DATA_LIMIT + 1];
 
-      next_fat_index = fat[fat_index];
+      /*next_fat_index = fat[fat_index];*/
 
       i = fat_index * BLOCK_SIZE;
 
@@ -99,10 +99,10 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
       data[strlen(data)] = '\0';
 
       /*Prints data block*/
-      fprintf(stderr,"%s", data);
+      printf("%s", data);
 
-      fat_index = next_fat_index;
-    } while(fat[fat_index] != END_OF_FILE);
+      fat_index = fat[fat_index];
+    } while(fat_index != END_OF_FILE);
     fclose(fptr);
   }
   return SUCCESS;
