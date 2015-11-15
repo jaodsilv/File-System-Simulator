@@ -227,4 +227,6 @@ no seu computador:
 
 9. Observações.
 
-A chamada 'make clean' irá limpar o diretório /source/obj e remover o binario executável do programa do diretório raiz.
+- A chamada 'make clean' irá limpar o diretório /source/obj e remover o binario executável do programa do diretório raiz.
+- O comando "time" (que não tem um código-fonte próprio presente dentro do diretório /source/commands/) foi criado para
+auxilizar nos testes. 
