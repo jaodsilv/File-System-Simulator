@@ -49,6 +49,7 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
 
   /*Search the tree for the parent directory of the file*/
   p = root_dir;
+
   while(file_path[i] != '\0') {
     char file_name[FNAME_SIZE];
     if(file_path[i + 1] != '\0' && file_path[i + 1] != '/') { i++; continue; }
@@ -70,6 +71,7 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
       i += 2; continue;
     }
   }
+
 
   /*Check if parent already have a file named with the choosen name. If yes, we got our guy*/
   if(p != NULL)

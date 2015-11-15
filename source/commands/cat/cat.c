@@ -87,13 +87,6 @@ int cat_file(char *fs, char *file_name, Directory *root_dir)
     fptr = fopen(fs, "rb");
     fat_index = t->fat_index;
 
-    printf("\n\n");
-    printf("t = %p\n", (void*)t);
-    printf("t->name = %s\n", t->name);
-    printf("t->size = %u\n", t->size);
-    printf("t->fat_index = %u\n", t->fat_index);
-    printf("\n\n");
-
     do {
       char data[DATA_LIMIT + 1];
 
