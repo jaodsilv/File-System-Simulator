@@ -39,6 +39,7 @@ int main()
     else if(cmd_cp(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_df(cmd, file_system, mounted));
     else if(cmd_mkdir(cmd, argc, argv, file_system, root_dir, mounted));
+    else if(cmd_rmdir(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_rm(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_ls(cmd, argc, argv, file_system, root_dir, mounted));
     else if(cmd_find(cmd, argc, argv, file_system, root_dir, mounted));

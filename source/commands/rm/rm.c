@@ -78,7 +78,7 @@ int remove_file(char *fs, char *file_name, Directory *root_dir)
     for(t = p->f; t != NULL; t = t->next)
       if(strcmp(file_abs_name, t->name) == 0) break;
 
-  /*Create new file, FINALLY! :D */
+  /*Remove file, FINALLY! :D */
   if(p == NULL || t == NULL) return BAD_PATH_RM;
   else {
     FILE *fptr;
