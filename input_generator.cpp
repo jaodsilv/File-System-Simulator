@@ -3,7 +3,6 @@ using namespace std;
 
 void print_test_cp_rm(int s) {
 	for(int i = 0; i < 30; ++i) {
-		cout << "time 0\n";
 		cout << "cp /home/joao/workspace/SO/File-System-Simulator/" << s << "mb.txt /\n";
 		cout << "time 1\n";
 		cout << "rm /" << s << "mb.txt\n";
@@ -21,13 +20,7 @@ void print_teste_7() {
 			cout << endl;
 		}
 		cout << "time 0\n";
-		for (int j =98; j >= 0; --j) {
-			cout << "rmdir /a";
-			for (int k = 0; k < j; ++k) {
-				cout << "/a";
-			}
-			cout << endl;
-		}
+		cout << "rmdir /a\n";
 		cout << "time 1\n";
 	}
 }
@@ -49,20 +42,7 @@ void print_teste_8() {
 			}
 		}
 		cout << "time 0\n";
-		for (int j =98; j >= 0; --j) {
-			for (int l = 0; l < 200; ++l) {
-				cout << "rm /a";
-				for (int k = 0; k < j; ++k) {
-					cout << "/a";
-				}
-				cout << "/b" << l << endl;
-			}
-			cout << "rmdir /a";
-			for (int k = 0; k < j; ++k) {
-				cout << "/a";
-			}
-			cout << endl;
-		}
+		cout << "rmdir /a\n";
 		cout << "time 1\n";
 	}
 }
@@ -73,6 +53,7 @@ int main() {
 	/* hd vazio */
 
 	/* teste 1 e 4 */
+	cout << "time 0\n";
 	print_test_cp_rm(1);
 	/* teste 2 e 5 */
 	print_test_cp_rm(10);
@@ -88,6 +69,7 @@ int main() {
 
 
 	/* teste 1 e 4 */
+	cout << "time 0\n";
 	print_test_cp_rm(1);
 	/* teste 2 e 5 */
 	print_test_cp_rm(10);
@@ -104,6 +86,7 @@ int main() {
 	cout << "cp /home/joao/workspace/SO/File-System-Simulator/30mb.txt /30mb\n";
 
 	/* teste 1 e 4 */
+	cout << "time 0\n";
 	print_test_cp_rm(1);
 	/* teste 2 e 5 */
 	print_test_cp_rm(10);
