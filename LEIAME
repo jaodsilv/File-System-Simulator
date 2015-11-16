@@ -181,7 +181,30 @@ performance da leitura de arquivo não é afetada por isso (o programa sabe quan
 esta implementação é a que mais pareceu fazer sentido, imaginando que dispositivos móveis como pendrives, mídias como
 CDs e até mesmos discos rigídos tem tamanho fixo.
 
-8. Exemplo de execução
+8. Problemas com testes.
+
+Testar com centenas de arquivos foi especificamente trabalhoso. Criamos um script que faz várias execuções do
+programa, rodando vários comandos consecutivamente, mas tinhamos erros em chamadas da fseek que poderiam ocorrer em
+qualquer ponto do código. Uma pesquisa um pouco mais aprofundada no revelou que não é um problema do nosso código em si,
+mas sim porque um processe estava chamando a função 'fopen' vezes demais, e e por segurança, em determinado momento
+o sistema operacional não deixava mais ele abrir um arquivo, carregando um ponteiro nulo para FILE para dentro da função
+fseek, resultando em SIGSIEV naquele trecho de código. A solução encontrada para testar foi criar baterias de teste menores
+e rodar novas instancias do EP separadamente, carregando o binário do ponto em que tinha sido deixado na última execução, assim
+cada nova run do EP3 seria um novo processo e o total de 'fopen's que poderíamos dar seria zerado, dado que é um novo processo.
+Para descobrir que este era o problema, apenas usamos o auxílio da biblioteca <errno.h>*, que retornava toda hora o erro
+24. Abaixo a linha do header da errno.h que é retornada no EP caso a execução extrapole no limite de chamadas a 'fopen'.
+
+"#define EMFILE      24  /* Too many open files */"
+
+* Obs: a versão que está sendo entregue não tem essa modificação do código por não haver necessidade, uma vez que já estamos
+escrevendo aqui o que deve se feito para evitar o crash, caso o usuário decida rodar o EP3 com um script que vai fazer
+milhares de chamadas a 'fopen' num mesmo processo)
+Obs2: outro possível workaround (não testado por nós) para este problema é mexer nas configurações de segurança do
+sistema operacional (aqui, estamos apenas falando de UNIX), no arquivo sysctl e mudar o número limite de arquivos que um
+processo iniciado pelo seu usuário pode abrir. Por não ter sido testado por nós, qualquer um que tentar essa aproximação
+está fazendo por conta própria e nós não nos responsabilizamos pelo resultado.
+
+9. Exemplo de execução
 A seguir um exemplo de execução válido para o nosso programa. Suponha que "<LEIAME>" é o caminho absoluto para este documento
 no seu computador:
 
@@ -225,8 +248,10 @@ no seu computador:
 [EP3]: umount
 [EP3]: sai
 
-9. Observações.
+10. Observações.
 
 - A chamada 'make clean' irá limpar o diretório /source/obj e remover o binario executável do programa do diretório raiz.
 - O comando "time" (que não tem um código-fonte próprio presente dentro do diretório /source/commands/) foi criado para
-auxilizar nos testes. 
+auxilizar nos testes.
+- O nome dos arquivos (= caminho absoluto, só para recordar) devem ter no máximo 1024 caracteres, incluindo o caracter nulo
+de término de string.
