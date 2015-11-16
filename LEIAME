@@ -1,4 +1,4 @@
-EP2 de MAC0422 - Sistemas Operacionais - Simulador de Gerenciador de Memória
+EP3 de MAC0422 - Sistemas Operacionais - Simulador de Sistema de Arquivos.
 
 Integrantes: Renan Fichberg      7991131
              João M. M. da Silva 7577598
@@ -11,249 +11,222 @@ o seguinte comando, estando no diretório que contém o makefile:
 § make all
 
 Tal chamada criará o binário necessário para executar o programa, no mesmo diretório
-do makefile, e moverá os arquivos .o para o diretórios /source/obj.
+do makefile, e moverá os arquivos .o para o diretório /source/obj.
 
 2. Uso
 
-Para usar o simulador de memória, basta invocar o comando seguinte do terminal, sem parâmetros:
+Para usar o simulador de sistema de arquivos, basta invocar o comando seguinte no terminal, sem parâmetros:
 
-§ ./ep2
+§ ./ep3
 
 Uma vez feito isso, o usuário estará no prompt do programa. Lá, ele poderá executar qualquer um
-dos comandos exigidos no enunciado.
-
-Obs1: O comando 'executa' aceita intervalos de tempo não inteiros também.
-Obs2: Para usar o comando executa, necessariamente precisa ser usado o comando carrega antes.
-Obs3: Há uma checagem, logo que inicia a simulação (não o prompt), do arquivo de tracing de entrada.
+dos comandos exigidos no enunciado. Note que para usar qualquer comando que não seja o 'mount',
+precisa usar o comando 'mount' antes. O programa irá barrar quaisquer tentativas de fazer isso
+sem que exista uma invocação anterior ao comando 'mount'. Ainda, a única checagem
+que é feita com relação aos argumentos de cada comando são o número de argumentos e
+se os argumentos são caminhos absolutos. ESTÁ A CARGO DO USUÁRIO CHECAR QUE A ROTA EXISTA
+E ESCREVER DIREITO. Mais uma observação: o programa foi feito considerando APENAS
+caracteres alfa-numéricos, alguns caracteres de pontuação, como '/' e '.'. O mal
+funcionamento do código devido a caracteres não esperados é também culpa do uso indevido
+do usuário e não dos programadores.
 
 3. Organização.
 
-Optamos por fazer essa organização de diretórios.
+Optamos por fazer essa organização de diretórios com a finalidade de ter um código com
+baixo acoplamento entre seus módulos e que priorize a fácil localização de cada funcionalidade:
 
 1) makefile e binário estarão no diretório 'raiz' do programa.
 2) código-fonte estará no diretório source/
+3) código-fonte de cada comando pode ser encontrado no diretório source/commands
 3) arquivos .o gerados na compilação estarão no diretório source/obj/
 4) arquivos .h podem ser encontrados no diretório headers/
 5) slides podem ser encontrados no diretório presentation/
-
-O programa está organizado desta maneira para facilitar a localização dos itens.
 
 4. Arquivos e diretórios.
 
 Estão sendo entregues os seguintes arquivos, nas suas respectivas
 localizações:
 
-1) makefile - para compilação
-2) LEIAME.txt - este documento
-3) source/ - diretório com o código-fonte
-4) source/ep2.c
-5) source/memory.c
-6) source/obj/ - diretório que irá conter todos os arquivos .o
-7) headers/ - diretório com os .h
-8) headers/ep2.h
-9) headers/memory.h
-10) presentation/slides.pdf - Slides a serem usados na apresentação em sala.
+1)  makefile - para compilação
+2)  LEIAME.txt - este documento
+3)  source/ - diretório com o código-fonte
+4)  source/bitmap.c
+5)  source/ep3.c
+6)  source/fat.c
+7)  source/fildir.c
+8)  source/obj/ - diretório que irá conter todos os arquivos .o
+9)  source/commands/ - diretório que contém um diretório com o código-fonte de cada comando
+10) source/commands/cat/
+11) source/commands/cat/cat.c
+12) source/commands/cp/
+13) source/commands/cp/cp.c
+14) source/commands/df/
+15) source/commands/df/df.c
+16) source/commands/exit/
+17) source/commands/exit/exit.c
+18) source/commands/find/
+19) source/commands/find/find.c
+20) source/commands/ls/
+21) source/commands/ls/ls.c
+22) source/commands/mkdir/
+23) source/commands/mkdir/mkdir.c
+24) source/commands/mount/
+25) source/commands/mount/mount.c
+26) source/commands/rm/
+27) source/commands/rm/rm.c
+28) source/commands/rmdir/
+29) source/commands/rmdir/rmdir.c
+30) source/commands/touch/
+31) source/commands/touch/touch.c
+32) source/commands/umount/
+33) source/commands/umount/umount.c
+34) headers/ - diretório com os cabeçalhos
+35) headers/bitmap.h
+36) headers/ep3.h
+37) headers/fat.h
+38) headers/fildir.h
+39) headers/partition.h
+40) headers/commands/ - diretório que contém um diretório com os cabeçalhos de cada comando
+41) headers/commands/cat/
+42) headers/commands/cat/cat.h
+43) headers/commands/cp/
+44) headers/commands/cp/cp.h
+45) headers/commands/df/
+46) headers/commands/df/df.h
+47) headers/commands/exit/
+48) headers/commands/exit/exit.h
+49) headers/commands/find/
+50) headers/commands/find/find.h
+51) headers/commands/ls/
+52) headers/commands/ls/ls.h
+53) headers/commands/mkdir/
+54) headers/commands/mkdir/mkdir.h
+55) headers/commands/mount/
+56) headers/commands/mount/mount.h
+57) headers/commands/rm/
+58) headers/commands/rm/rm.h
+59) headers/commands/rmdir/
+60) headers/commands/rmdir/rmdir.h
+61) headers/commands/touch/
+62) headers/commands/touch/touch.h
+63) headers/commands/umount/
+64) headers/commands/umount/umount.h
+65) presentation/slides.pdf - Slides a serem usados na apresentação em sala.
 
 5. Sobre o código.
 
-A respeito da entrada, será discutido no item seguinte.
-Quanto ao código, a tarefa da simulação é dividida entre 3 threads: Manager, Printer e Timer.
+Obs: a seguir, neste documento, sempre que falarmos de "nome" de arquivos e diretórios,
+está implícito que é o caminho absoluto. Assim, um arquivo "file.txt" no diretório "dir", que
+por sua vez está no root ("/"), tem nome "/dir/file.txt" e o diretório "dir" tem nome "/dir/".
+Ainda, está implicito que todos os nomes de diretórios terminam com o caracter '/' (no programa
+o usuário não é obrigado a escrever esta barra final no nome do diretório pois o programa se
+encarrega disso caso ele não a coloque).
 
-5.1) Manager Thread
+Como a seção anterior indica, o código foi modularizado por 2 motivos em especial:
 
-Esta thread é responsável por toda a parte lógica da simulação. Ela cuida das alocações do espaço
-virtual com os algoritmos de gerência de espaço (usa o que foi escolhido. Se nenhum for escolhido, o
-algoritmo default é o First-Fit) e da paginação (usa o algorimo que foi escolhido. Se nenhum for escolhido,
-o algoritmo default é o Not-Recently-Used-Page).
+A) Primeiro, pela própria natureza do que foi especificado no enunciado como tarefa
+B) Pelo modo que o próprio bash organiza seus utilitários, que nos serviu de inspiração.
 
-As alocações são feitas usando uma lista ligada duplamente encadeada, que é imprimida na tela de tempos em tempos.
-O tamanho inicial da lista é o tamanho da memória virtual (um multiplo de 16, que é o tamanho de cada página e cada
-quadro de página). Inicialmente, temos uma célula livre com base = 0 e limite = 'virtual'. Conforme as alocações vão ocorrendo,
-a lista vai aumentando e o espaço livre vai diminuindo, assim, se um processo de tamanho 8 chegar antes, um espaço de 16 será alocado
-para ele (mesmo que ele não use todos os 16 bytes), e a lista ficaria algo como [process0, 0, 16] <-> [free, 16, virtual].
-O EP não está fazendo compactação de memória, pois nada foi exigido no enunciado. Então, se acontecer uma situação como
-[free, 0, 16] <-> [processX, 16, 32] <-> [free, 32, virtual], o programa NÃO ira transformar isso em
-[processX, 0, 16] <-> [free, 16, virtual]. O que vai acontecer é que quando o processX terminar de fazer tudo o que precisa, a
-lista será transformada em [free, 0, virtual] novamente (A compactação ocorre apenas durante as desalocações, considerando os vizinhos
-do processo que está sendo desalocado, e não a lista toda). Se a lista estiver cheia ou não tem espaço suficiente para alocar qualquer
-processo que esteja chegando, estes processos vão ficar esperando por um espaço.
-Uma vez que o processo é alocado, além dele ganhar um espaço na lista encadeada, ele também é escrito no binário de memória virtual, nas
-respectivas posições. Se a célula dele na lista ligada for [processX, X, X + 16], então na memória virtual, ele terá seu PID escrito
-nas posições [X, X + 16[. Quando um processo consegue um quadro de página, a mesma coisa ocorre com relação ao aqruivo de memória física.
-Esta thread também é responsável por ficar de olho nos acessos. Sempre que acontecer uma tentativa de acesso por parte de algum
-dos processos, o manager irá substituir uma das páginas de um dos quadros e em seguida atualizará a tabela de páginas. A cada 3s,
-processos que tiverem seus bits R ligados serão desligados. Precisam ser, necessariamente, períodos de 3s em que não houve quaisquer tentativas
-de acesso àquele quadro.
+Ao iniciar o programa, o usuário se depara com o prompt do EP3, que fica aguardando comandos.
+Dentro do prompt, há um mecanismo para capturar os dados inseridos pelo usuário pela entrada
+padrão (teclado) similar ao modo que um executável é iniciado pelo bash, só que sem usar chamadas
+de sistema. Este mecanismo, junto da bibliotece string.h são suficientes para filtrar os comandos
+e seus respetivos argumentos para fazer a validação e, se bem sucedidade, executar o que foi comandado.
+A biblioteca readline foi usada neste EP para capturar os dados da entrada padrão. Ela também
+é usada dentro do comando 'sai' para perguntar se o usuário tem certeza que deseja sair do simulador
+quando tem um sistema de arquivos que ainda não foi desmontado com o comando 'umount' (encare isso
+como uma funcionalidade 'safety' que achamos legal implementar).
+A chamada ao comando 'mount' monta uma árvore de diretórios na estrutura de dados do programa e
+abre um sistema de arquivos a partir do nome de um binário. Se o nome não referenciar nenhum arquivo,
+um novo binário com o nome passado de argumento é criado, caso contrário, se existir um binário com
+tal nome, este binário é carregado com as informações que foram deixadas na última execução (e a
+árvore é remontada considerando estas informações).
 
-Um processo consegue um quadro de página quando:
-a) não há nenhum processo utilizando aquele quadro (no arquivo, a posição contém -1).
-b) ocorreu um acesso e a memória física está cheia e uma das páginas na memória virtual
-obrigatoriamente será substituida.
+6. Manipulação do arquivo binário (que contém o sistema de arquivos) criado ao executar o comando 'mount'.
 
-5.1.1) Algoritmos de gerência de espaço livre
+Para manipular o arquivo binário, tivemos de pensar em um layout para guardar as informações e recuperá-las
+em um momento futuro. Tal layout está descrito no arquivo "headers/partition.h". Basicamente, grande parte
+das definições daquele arquivo são para manipular o ponteiro da stream de um FILE (stdlib.h) usando a função
+fseek. A seguir, uma breve explicação da idéia central do layout:
 
-Os algoritmos implementados foram:
+As posições de caracters de [0, 76000[ (primeiros 76kb do arquivo) são reservadas para o Superbloco,
+o bitmap (para genreciamento de memória), a tabela de alocação de arquivos (FAT), o nome do root ("/"),
+e as datas de criação, modificação e acesso do root (para um sistema de arquivos que não é novo, a sua
+data de criação original, bem como as outras duas datas, são mantidas do jeito que foram deixadas. Isso vale
+para os arquivos e diretórios do usuário, também). Depois disso, os bytes das posições [76000, 100000000 (= 100mb)[,
+são reservados para diretórios e arquivos do usuário. Com relação a tais diretórios e arquivos, os seus primeiros
+1100 bytes [0, 1100[ são reservados para metadados do arquivos, e os últimos 2900 bytes são reservados para dados (no
+caso de arquivos texto). Cada bloco do arquivo binário, por definição, tem portanto, um tamanho 1100 + 2900 = 4kb e
+quando um certo arquivo não cabe em apenas um bloco, ele usa blocos adicionais (e atavés das suas informações do FAT,
+guardadas nos seus metadados junto das informações do FAT guardadas no primeiros 76kb do arquivo binário, conseguimos
+recuperar o sistema de arquivos no estado em que ele foi deixado pela última vez).
 
-5.1.1.1) First-Fit
+7. Decisões de projeto que ainda não foram mencionadas
 
-- Varre a lista encadeada, sempre começando da cabeça.
-- Se encontrar uma posição em que o processo caiba, aloca.
-- Se não encontrar, nada acontece e o processo ficará esperando até ter um
-espaço que o comporte.
+I   - Os diretórios, apesar de não terem nos seus metadados um campo reservado para "tamanho", assim como os
+arquivos de texto vazios, eles também são guardados no bitmap e no FAT, ocupando apenas UM índice de ambas as
+tabelas.
+II  - Apesar dos arquivos de texto e dos diretórios terem esta mesma característica descrita em (I), os
+2900 bytes da área de dados de um diretório não são considerados como desperdiçados, ao contrário de um
+arquivo de texto vazio. Ou seja, o comando 'df' para um sistema de arquivos só com um diretório apontará
+zero bytes desperdiçados enquanto um outro sistema arquivos, só com um arquivo de texto vazio (criado com
+o comando touch) na raiz terá 2900 bytes apontados como desperdiçados ao rodar o mesmo comando.
+III - Ao iniciar um novo arquivo binário, um caracter '\n' é colocado na posição 100000000 do arquivo, portanto,
+os arquivos na realidade tem 100mb + 1b. Este caracter serve apenas para que o sistema de arquivos mostre sempre
+a sua capacidade de 100mb. O tanto que de fato está sendo usado pode ser visto usando o comando 'df', já mencionado
+anteriormente. Tal decisão de projeto foi escolhida para melhorar a manipulação do arquivo (e não correr riscos de
+receber erros de BUS (SIGBUS)), considerando casos em que podem ter "blocos esparsos" (= blocos desalocados entre
+blocos alocados). Este caracter é inacessível e existirá no arquivo binário até que o mesmo seja deletado. A
+performance da leitura de arquivo não é afetada por isso (o programa sabe quando já leu tudo o que deveria). Ainda,
+esta implementação é a que mais pareceu fazer sentido, imaginando que dispositivos móveis como pendrives, mídias como
+CDs e até mesmos discos rigídos tem tamanho fixo.
 
-5.1.1.2) Next-Fit
+8. Exemplo de execução
+A seguir um exemplo de execução válido para o nosso programa. Suponha que "<LEIAME>" é o caminho absoluto para este documento
+no seu computador:
 
-- Varre a lista encadeada, sempre começando da última posição (não necessariamente da cabeça).
-- Se encontrar uma posição em que o processo caiba, aloca.
-- Se não encontrar, nada acontece e o processo ficará esperando até ter um
-espaço que o comporte.
+§ ./ep3
+[EP3]: mount /tmp/fs.bin
+[EP3]: mkdir /dir1
+[EP3]: df
+[EP3]: touch /dir1/file1.txt
+[EP3]: df
+[EP3]: mkdir /dir2
+[EP3]: cp <LEIAME> /dir2
+[EP3]: mkdir /dir1/dir2/
+[EP3]: df
+[EP3]: touch /dir1/dir2/file2.txt
+[EP3]: df
+[EP3]: rm /dir1/file1.txt
+[EP3]: df
+[EP3]: ls /
+[EP3]: find / LEIAME
+[EP3]: cat /dir/LEIAME
+[EP3]: rmdir /dir2
+[EP3]: df
+[EP3]: mkdir /dir42
+[EP3]: cp <LEIAME> /dir42
+[EP3]: df
+[EP3]: sai
+> y
+§ ./ep3
+[EP3]: mount /tmp/fs2.bin
+[EP3]: df
+[EP3]: sai
+> n
+[EP3]: df
+[EP3]: umount
+[EP3]: df
+[EP3]: mount /tmp/fs.bin
+[EP3]: df
+[EP3]: cat /dir42/LEIAME
+[EP3]: rm /dir42/LEIAME
+[EP3]: df
+[EP3]: umount
+[EP3]: sai
 
-5.1.1.3) Quick-Fit
+9. Observações.
 
-- Aqui existem 4 listas ligadas duplamente encadeadas.
-- A lista sempre é varrida da cabeça até o final, como o First-Fit.
-- Dependendo do tamanho do processo, ele é direcionado a uma ou outra lista.
-- Os tamanhos escolhidos foram:
-a) para processos de tamanho b <= 16
-b) para processes de tamanho 16 < b <= 64
-c) para processos de tamanho 64 < b <= 256
-d) para processos de tamanho b > 256
-
-Não há nada de especial na escolha destes tamanhos além do fato de serem múltiplos de 16.
-
-- Se encontrar uma posição em que o processo caiba, aloca.
-- Se não encontrar, nada acontece e o processo ficará esperando até ter um
-espaço que o comporte.
-
-5.1.2) Algoritmos de substituição de páginas
-
-Os algoritmos implementados foram:
-
-5.1.2.1) Not-Recently-Used-Page
-
-- As páginas dos processos que possuem um quadro de página são rankeadas de acordo
-com os seus bits R e M.
-- Todos os acessos no nosso EP são considerados como escrita, portanto, sempre que um acesso ocorre,
-o bit M assume o valor de 1 (esta decisão foi apenas para fazer com que o bit M não fosse apenas simbólico).
-- Possíveis valores:
-a) Classe 0: bits R e M desligados - na prática, este estado não acontece.
-b) Classe 1: bit R desligado, bit M ligado.
-c) Classe 2: bit R ligado, bit M desligado - na prática, este estado não acontece.
-d) Classe 3: bits R e M ligados.
-- A página de menor classe é substituida. Se houver empate, é elegida aleatoriamente a página que sairá usando a função rand.
-
-5.1.2.2) First-In-First-Out
-
-- As páginas, ao conseguirem um quadro de página, recebem um valor inteiro que representa a sua posição na fila.
-- Das páginas que tiverem um quadro de página, aquela que tiver o menor valor no 'tick lógico' (o inteiro mencionado
-anteriormente) é a mais antiga.
-- Busca a página com o menor tick lógico e a remove. A nova página recebe o valor do tick logico atual e o tick lógico
-é incrementado para a próxima página receber quando obtiver um quadro de página (o tick logico não é usado se não
-acontecer Page Fault neste algoritmo).
-
-5.1.2.3) Second-Chance-Page
-
-- As páginas, ao conseguirem um quadro de página, recebem um valor inteiro que representa a sua posição na fila.
-- Das páginas que tiverem um quadro de página, aquela que tiver o menor valor no 'tick lógico' (o inteiro mencionado
-anteriormente) é a mais antiga.
-- Busca a página com o menor tick lógico. Se a página tiver o bit R desligado, ela é removida. Caso contrário, ela recebe
- uma nova chance (e portanto seu tick logico é substituido pelo valor atual, e este é incrementado para a próxima página. Isso
- tem o mesmo efeito de colocá-la no final da fila) e uma nova busca é iniciada. Se acontecer de todas as páginas
- receberem uma segunda chance, então a que recebeu a segunda chance primeiro é que será substituida.
-
-5.1.2.3) Least-Recently-Used-Page
-
-- As páginas, ao conseguirem um quadro de página, recebem um valor inteiro que representa a sua posição na fila (fila para
-ver quem está mais perto e quem está mais longe de sair. Agora não tem nada a ver com ordem de chegada).
-- Das páginas que tiverem um quadro de página, aquela que tiver o menor valor no 'tick lógico' (o inteiro mencionado
-anteriormente) é a candidata a sair (aqui o tick não assume o papel de ver quem é a mais antiga).
-- Busca a página com o menor tick lógico e a remove. A nova página recebe o valor do tick logico atual e o tick lógico
-é incrementado para a próxima página receber quando obtiver um quadro de página (o tick logico não é usado se não
-acontecer Page Fault neste algoritmo).
-- Um tick não é atribuido somente no momento da substituição, mas também a cada acesso ocorrido. A página acessada
-recebe o valor atual do tick (e portanto, sendo colocada naquele momento como a menos provável de sair. Por causa disso que
-neste algoritmo, diferentemente do FIFO, a fila não assume um papel de ver quem é mais antigo e quem é mais novo, mas sim
-quem é mais ou menos usado).
-
-5.2) Printer Thread
-
-Responsável por imprimir os estados dos arquivos binários e da lista duplamente encadeada. Naturalmente, como
-essa thread e a Manager competem pelo acesso à lista e aos arquivos binários, é de se esparar que exista uma semáforo
-que controla os acessos destes 3 recursos (2 arquivos e a lista). A thread Printer vai sempre tentar imprimir
-os estados destes itens de intervalo em intervalo de segundos (intervalo é o parametro do comando executa, e no nosso programa,
-este valor pode ser um ponto flutuante), mas é esperado que dependendo da quantidade de acessos a estes recursos, a Printer Thread
-tenha de esperar no semáforo até a Manager terminar o que está fazendo e, assim, atrasando o mínimo possível a impressão (os tempos
-serão sempre impressos considerando o relógio do simulador).
-Há 2 semáforos no simulador: um para proteger a lista e outro para proteger os arquivos.
-
-5.3) Timer Thread
-
-Responsável por controlar o tempo de simulação e atualizar todas variáveis de tempo da simulação.
-Esta thread existe para dar maior garantia de que as impressões estarão mais próximas dos seus tempos reais.
-Se o papel do tempo estivesse na Manager ou na printer, os semáforos ou mesmo a lógica da Manager iriam atrasar
-na impressão do tempo e as impressões seriam menos fiéis ao intervalo de tempo requisitado em 'executa'.
-
-6. Manipulação dos binários em C
-
-Para manipular os arquivos binários, a estratégia utilizada foi usar a biblioteca stdint com os tipos
-uint8_t e int8_t. Cada um destes tipo comporta 1 byte e nos dá a garantia de que os arquivos terão exatamente
-os tamanhos exigidos. Inicialmente, nos arquivos, são escritos valores de -1 em todas as posições usando o tipo
-int8_t. Conforme as posições vão sendo alocadas, as posições de int8_t são subsituidas por valores do tipo uint8_t.
-Isso significa que sempre ao abrir os arquivos, traalhos com 2 ponteiros do tipo FILE e arrays tanto de uint8_t como de
-int8_t. Ainda, são usados vetores de int que funcionam como mapas, que servem para alertar o programa quais áreas nunca foram alocadas e quais
-foram (pois não é possível comparar uint8_t e int8_t sem ter problemas, dado que podem haver truncamentos e o próprio compilador gera
-warnings com esta prática, o que não é legal) que auxiliam o problema a tratar da substituição dos valores int8_t por uint8_t.
-
-7. Arquivo de tracing.
-
-Nesta seção falaremos um pouco sobre a checagem da entrada realizada pelo simulador
-e deixaremos um exemplo de entrada
-
-7.1. Formato de entrada
-
-O simulador vai exigir que a o arquivo de tracing respeite as seguintes regras:
-
-0) As memórias 'virtual' e 'total' devem ter um tamanho múltiplo de 16.
-1) O tamanho 'b' de qualquer processo deve ser menor que o valor colocado em 'virtual'.
-2) Um processo que tem um tamanho 'b', poderá fazer acessos aos seus "endereços locais"
-no intervalo [0, b[. O valor dos "endereços locais" são inteiros. Ou seja, para
-todos os valores da lista de pn, devemos ter que 0 < pn < b. A checagem de pn > 0 não é realizada,
-mas a de pn < b sim.
-3) Um processo que tem tempo de de chegada 't0' deve ter todos os seus tempos de acesso tn
-iguais ou superiores a 't0'. Um processo que tem um tempo de saída igual a 'tf' deve ter todos os
-seus tempos de acesso tn iguais ou inferiores a 'tf'. Ou seja, para todos os efeitos, devemos
-ter que t0 <= tn <= tf. O simulador barra quaisquer entradas que não sigam isso.
-4) Os tempos tn de cada processo devem aparecer em ordem crescente, ou seja, para qualquer
-tempo de acesso i > 0, devemos ter que tn_i <= tn_i+1.
-
-Estas exigências são importantes por causa da forma que o nosso simulador gerencia os acessos e os espaços.
-Os espaços são 'transformados' na hora do acesso com uma soma da base do quadro de página que o processo obteve + pn
-Os tempos de acesso são transformados logo que inicia a simulação e o que é usado de fato para manipular os processos
-é a duração que o processo deve existir (tf - t0) e os tempos de acesso dentro do intervalo de duração (tn - t0).
-
-Isto é feito para todos os processos.
-
-Obs1: não há checagem para isso, mas é esperado que todos os números da entrada sejam inteiros e não-negativos.
-Obs2: o programa foi feito para ler sequencias de até 4096 caracteres por linha de processo. É aconselhável que cada linha
-do arquivo de tracing tenha uma quantidade inferior a este limite de pelo menos uns 10 caracteres por segurança. Se o valor
-passar deste limite, são esperados erros na hora da leitura ou que o programa quebre durante a execução.
-
-7.2 Exemplo de entrada
-A seguir um exemplo de entrada válida para o nosso programa:
-
-32 64
-0 process0 7 6 2 1 4 5 0 6
-0 process1 10 4 0 4 1 5 3 6 2 9
-1 process2 6 12 10 2 5 4 5 5
-4 process3 16 10 3 8 8 9 2 14
-3 process4 9 20 5 4 12 6 14 7 18 9
-6 process5 10 18 12 9 16 10 8 10 4 10
-5 process6 14 14 7 5 9 10 12 11 13 12 12 13 3 14
-3 process7 14 8 1 4 0 6 7 7
-
-Você pode copiar e colar esta entrada em um arquivo .txt para teste.
-
-8. Observações.
-
-- a chamada 'make clean' irá limpar o diretório /source/obj e também removerá
-os arquivos binários ep2.mem e ep2.vir, criados na execução, localizados em /tmp
+- A chamada 'make clean' irá limpar o diretório /source/obj e remover o binario executável do programa do diretório raiz.
+- O comando "time" (que não tem um código-fonte próprio presente dentro do diretório /source/commands/) foi criado para
+auxilizar nos testes. 
