@@ -253,5 +253,5 @@ no seu computador:
 - A chamada 'make clean' irá limpar o diretório /source/obj e remover o binario executável do programa do diretório raiz.
 - O comando "time" (que não tem um código-fonte próprio presente dentro do diretório /source/commands/) foi criado para
 auxilizar nos testes.
-- O nome dos arquivos (= caminho absoluto, só para recordar) devem ter no máximo 1024 caracteres, incluindo o caracter nulo
+- O nome dos arquivos e diretórios (= caminho absoluto, só para recordar) devem ter no máximo 1024 caracteres, incluindo o caracter nulo
 de término de string.
