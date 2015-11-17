@@ -150,7 +150,7 @@ das definições daquele arquivo são para manipular o ponteiro da stream de um 
 fseek. A seguir, uma breve explicação da idéia central do layout:
 
 As posições de caracters de [0, 76000[ (primeiros 76kb do arquivo) são reservadas para o Superbloco,
-o bitmap (para genreciamento de memória), a tabela de alocação de arquivos (FAT), o nome do root ("/"),
+o bitmap (para gerenciamento de memória), a tabela de alocação de arquivos (FAT), o nome do root ("/"),
 e as datas de criação, modificação e acesso do root (para um sistema de arquivos que não é novo, a sua
 data de criação original, bem como as outras duas datas, são mantidas do jeito que foram deixadas. Isso vale
 para os arquivos e diretórios do usuário, também). Depois disso, os bytes das posições [76000, 100000000 (= 100mb)[,
@@ -175,17 +175,17 @@ III - Ao iniciar um novo arquivo binário, um caracter '\n' é colocado na posi�
 os arquivos na realidade tem 100mb + 1b. Este caracter serve apenas para que o sistema de arquivos mostre sempre
 a sua capacidade de 100mb. O tanto que de fato está sendo usado pode ser visto usando o comando 'df', já mencionado
 anteriormente. Tal decisão de projeto foi escolhida para melhorar a manipulação do arquivo (e não correr riscos de
-receber erros de BUS (SIGBUS)), considerando casos em que podem ter "blocos esparsos" (= blocos desalocados entre
+receber erros de barramento (SIGBUS)), considerando casos em que podem ter "blocos esparsos" (= blocos desalocados entre
 blocos alocados). Este caracter é inacessível e existirá no arquivo binário até que o mesmo seja deletado. A
-performance da leitura de arquivo não é afetada por isso (o programa sabe quando já leu tudo o que deveria). Ainda,
-esta implementação é a que mais pareceu fazer sentido, imaginando que dispositivos móveis como pendrives, mídias como
-CDs e até mesmos discos rigídos tem tamanho fixo.
+performance da leitura de arquivo não é afetada por isso (o programa sabe quando já leu tudo o que deveria Um arquivo não é
+lido sempre até encontrar este caracter final). Ainda, esta implementação é a que mais pareceu fazer sentido,
+imaginando que dispositivos móveis como pendrives, mídias como CDs e até mesmos discos rigídos tem tamanho fixo.
 
 8. Problemas com testes.
 
 Testar com centenas de arquivos foi especificamente trabalhoso. Criamos um script que faz várias execuções do
-programa, rodando vários comandos consecutivamente, mas tinhamos erros em chamadas da fseek que poderiam ocorrer em
-qualquer ponto do código. Uma pesquisa um pouco mais aprofundada no revelou que não é um problema do nosso código em si,
+programa, rodando vários comandos consecutivamente, mas tinhamos erros em chamadas a fseek que poderiam ocorrer em
+qualquer ponto do código. Uma pesquisa um pouco mais aprofundada nos revelou que não é um problema do nosso código em si,
 mas sim porque um processe estava chamando a função 'fopen' vezes demais, e e por segurança, em determinado momento
 o sistema operacional não deixava mais ele abrir um arquivo, carregando um ponteiro nulo para FILE para dentro da função
 fseek, resultando em SIGSIEV naquele trecho de código. A solução encontrada para testar foi criar baterias de teste menores
@@ -197,7 +197,7 @@ Para descobrir que este era o problema, apenas usamos o auxílio da biblioteca <
 "#define EMFILE      24  /* Too many open files */"
 
 * Obs: a versão que está sendo entregue não tem essa modificação do código por não haver necessidade, uma vez que já estamos
-escrevendo aqui o que deve se feito para evitar o crash, caso o usuário decida rodar o EP3 com um script que vai fazer
+escrevendo aqui o que deve ser feito para evitar o crash, caso o usuário decida rodar o EP3 com um script que vai fazer
 milhares de chamadas a 'fopen' num mesmo processo)
 Obs2: outro possível workaround (não testado por nós) para este problema é mexer nas configurações de segurança do
 sistema operacional (aqui, estamos apenas falando de UNIX), no arquivo sysctl e mudar o número limite de arquivos que um
@@ -255,3 +255,5 @@ no seu computador:
 auxilizar nos testes.
 - O nome dos arquivos e diretórios (= caminho absoluto, só para recordar) devem ter no máximo 1024 caracteres, incluindo o caracter nulo
 de término de string.
+- Para calcular a memória desperdiçada, só são consideradas a área de dados dos arquivos de textos. Bytes não usados de outros trechos
+da partição não são considerados desperdiçados por não serem acessíveis ao usuário.
